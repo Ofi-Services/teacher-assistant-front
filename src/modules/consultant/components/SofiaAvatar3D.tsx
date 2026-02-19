@@ -8,6 +8,7 @@ interface SofiaAvatar3DProps {
   isSpeaking: boolean;
   isHappy?: boolean;
   showHappyEmoticon?: boolean;
+  emoticon?: string;
 }
 
 interface AvatarModelProps {
@@ -237,6 +238,7 @@ const SofiaAvatar3D: React.FC<SofiaAvatar3DProps> = ({
   isSpeaking,
   isHappy = false,
   showHappyEmoticon = false,
+  emoticon = '😊✨',
 }) => {
   return (
     <div className="relative w-full max-w-[520px] aspect-[4/5]">
@@ -255,7 +257,7 @@ const SofiaAvatar3D: React.FC<SofiaAvatar3DProps> = ({
           showHappyEmoticon ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        😊✨
+        {emoticon}
       </div>
     </div>
   );

@@ -9,6 +9,36 @@ import SofiaAvatar3D from '../components/SofiaAvatar3D';
 
 const COURSE_FORM_PREFILL_STORAGE_KEY = 'ofi_course_form_prefill';
 const FILL_FORM_EVENT_NAME = 'ofi:fill-course-creation-form';
+const DEFAULT_MOOD_EMOTICON = '🙂';
+
+const MOOD_EMOTICONS: Record<string, string> = {
+  happy: '😊✨',
+  excited: '🤩⚡',
+  concerned: '😟💭',
+  patient: '🙂🕰️',
+  chuckles: '😄🎵',
+  coughs: '😷🤧',
+  'french accent': '🥖🇫🇷',
+  'us accent': '🗽🇺🇸',
+  whispering: '🤫🫶',
+  sad: '😢🌧️',
+  laughing: '😂🎉',
+  angry: '😠🔥',
+  sighs: '😮‍💨🍃',
+  disappointed: '😞💔',
+  enthusiastic: '😁🚀',
+  serious: '🧐📌',
+  singing: '🎤🎶',
+};
+
+const HAPPY_STYLE_MOODS = new Set([
+  'happy',
+  'excited',
+  'laughing',
+  'enthusiastic',
+  'chuckles',
+  'singing',
+]);
 
 interface VoiceChatProps {
   agentId?: string;
@@ -32,6 +62,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const [mouthOpen, setMouthOpen] = useState(0);
   const [isAvatarHappy, setIsAvatarHappy] = useState(false);
   const [showHappyEmoticon, setShowHappyEmoticon] = useState(false);
+  const [currentMoodEmoticon, setCurrentMoodEmoticon] = useState(DEFAULT_MOOD_EMOTICON);
   const [isDockVisible, setIsDockVisible] = useState(false);
   const hasAgentId = Boolean(agentId?.trim());
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -117,7 +148,9 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     };
   }, []);
 
-  const triggerHappyAvatar = useCallback(() => {
+  const triggerMoodFeedback = useCallback((rawMood: string) => {
+    const normalizedMood = rawMood.trim().toLowerCase();
+
     if (happyStateTimeoutRef.current) {
       window.clearTimeout(happyStateTimeoutRef.current);
     }
@@ -125,7 +158,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       window.clearTimeout(happyEmoticonTimeoutRef.current);
     }
 
-    setIsAvatarHappy(true);
+    setCurrentMoodEmoticon(MOOD_EMOTICONS[normalizedMood] || DEFAULT_MOOD_EMOTICON);
+    setIsAvatarHappy(HAPPY_STYLE_MOODS.has(normalizedMood));
     setShowHappyEmoticon(true);
 
     happyStateTimeoutRef.current = window.setTimeout(() => {
@@ -136,7 +170,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     happyEmoticonTimeoutRef.current = window.setTimeout(() => {
       setShowHappyEmoticon(false);
       happyEmoticonTimeoutRef.current = null;
-    }, 1000);
+    }, 2500);
   }, []);
 
   useEffect(() => {
@@ -325,8 +359,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       if (text) {
         const { text: cleanedText, mood } = parseMoodTaggedText(text);
 
-        if (mood === 'happy') {
-          triggerHappyAvatar();
+        if (mood) {
+          triggerMoodFeedback(mood);
         }
 
         if (cleanedText) {
@@ -340,8 +374,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       if (text) {
         const { text: cleanedText, mood } = parseMoodTaggedText(text);
 
-        if (mood === 'happy') {
-          triggerHappyAvatar();
+        if (mood) {
+          triggerMoodFeedback(mood);
         }
 
         if (cleanedText) {
@@ -541,6 +575,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                     isSpeaking={status === 'connected' && isSpeaking}
                     isHappy={isAvatarHappy}
                     showHappyEmoticon={showHappyEmoticon}
+                    emoticon={currentMoodEmoticon}
                   />
                 </div>
               )}
@@ -619,6 +654,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                 isSpeaking={status === 'connected' && isSpeaking}
                 isHappy={isAvatarHappy}
                 showHappyEmoticon={showHappyEmoticon}
+                emoticon={currentMoodEmoticon}
               />
             </div>
           )}

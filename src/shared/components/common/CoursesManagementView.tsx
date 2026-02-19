@@ -201,6 +201,8 @@ interface CourseFormState {
   prerequisites: string
 }
 
+type CourseFormField = keyof CourseFormState
+
 const initialFormState: CourseFormState = {
   title: "",
   code: "",
@@ -222,8 +224,44 @@ const initialFormState: CourseFormState = {
 export default function CoursesManagementView() {
   const [searchParams] = useSearchParams()
   const createSectionRef = useRef<HTMLDivElement | null>(null)
+  const typingSessionRef = useRef(0)
   const [formData, setFormData] = useState<CourseFormState>(initialFormState)
   const [submitMessage, setSubmitMessage] = useState("")
+
+  const wait = (ms: number) => new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+
+  const typeFieldsInParallel = async (
+    sessionId: number,
+    fieldValues: Array<{ field: CourseFormField; value: string }>
+  ) => {
+    if (fieldValues.length === 0) return
+
+    const maxLength = Math.max(...fieldValues.map((item) => item.value.length))
+
+    setFormData((previous) => {
+      const next = { ...previous }
+      for (const item of fieldValues) {
+        next[item.field] = ""
+      }
+      return next
+    })
+
+    for (let index = 1; index <= maxLength; index += 1) {
+      if (typingSessionRef.current !== sessionId) return
+
+      setFormData((previous) => {
+        const next = { ...previous }
+        for (const item of fieldValues) {
+          next[item.field] = item.value.slice(0, index)
+        }
+        return next
+      })
+
+      await wait(22)
+    }
+  }
 
   const applyToolPrefill = (rawPayload: unknown) => {
     if (!rawPayload || typeof rawPayload !== "object") return
@@ -231,32 +269,53 @@ export default function CoursesManagementView() {
     const payload = rawPayload as ToolFillCoursePayload
     const normalizedLevel = payload.nivel
     const normalizedModality = payload.modalidad
+    const sessionId = Date.now()
+
+    typingSessionRef.current = sessionId
+    setSubmitMessage("Sofia está escribiendo en el formulario...")
+    createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
 
     setFormData((previous) => ({
       ...previous,
-      title: payload.titulo ?? previous.title,
-      code: payload.codigo ?? previous.code,
-      category: payload.categoria ?? previous.category,
       level: normalizedLevel === "Inicial" || normalizedLevel === "Intermedio" || normalizedLevel === "Avanzado"
         ? normalizedLevel
         : previous.level,
       modality: normalizedModality === "Online" || normalizedModality === "Presencial" || normalizedModality === "Híbrido"
         ? normalizedModality
         : previous.modality,
-      language: payload.idioma ?? previous.language,
-      instructor: payload.instructor ?? previous.instructor,
-      durationHours: payload.duracion !== undefined ? String(payload.duracion) : previous.durationHours,
-      capacity: payload.cupo_maximo !== undefined ? String(payload.cupo_maximo) : previous.capacity,
       startDate: payload.fecha_inicio ?? previous.startDate,
       endDate: payload.fecha_cierre ?? previous.endDate,
-      price: payload.precio !== undefined ? String(payload.precio) : previous.price,
-      tags: payload.etiquetas ?? previous.tags,
-      description: payload.descripcion ?? previous.description,
-      prerequisites: payload.prerrequisitos ?? previous.prerequisites,
     }))
 
-    setSubmitMessage("Formulario autocompletado con datos enviados por Sofia.")
-    createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    const runTyping = async () => {
+      const fieldsToType: Array<{ field: CourseFormField; value?: string | number }> = [
+        { field: "title", value: payload.titulo },
+        { field: "code", value: payload.codigo },
+        { field: "category", value: payload.categoria },
+        { field: "language", value: payload.idioma },
+        { field: "instructor", value: payload.instructor },
+        { field: "durationHours", value: payload.duracion },
+        { field: "capacity", value: payload.cupo_maximo },
+        { field: "price", value: payload.precio },
+        { field: "tags", value: payload.etiquetas },
+        { field: "description", value: payload.descripcion },
+        { field: "prerequisites", value: payload.prerrequisitos },
+      ]
+
+      const normalizedFields = fieldsToType
+        .filter((item) => item.value !== undefined && item.value !== null)
+        .map((item) => ({
+          field: item.field,
+          value: String(item.value),
+        }))
+
+      await typeFieldsInParallel(sessionId, normalizedFields)
+
+      if (typingSessionRef.current !== sessionId) return
+      setSubmitMessage("Formulario autocompletado con datos enviados por Sofia.")
+    }
+
+    void runTyping()
   }
 
   useEffect(() => {
@@ -264,6 +323,12 @@ export default function CoursesManagementView() {
       createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
     }
   }, [searchParams])
+
+  useEffect(() => {
+    return () => {
+      typingSessionRef.current = 0
+    }
+  }, [])
 
   useEffect(() => {
     const storedPayload = localStorage.getItem(COURSE_FORM_PREFILL_STORAGE_KEY)
