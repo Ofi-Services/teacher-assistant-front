@@ -7,6 +7,27 @@ import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
 import { Button } from "@/shared/components/ui/button"
 
+const COURSE_FORM_PREFILL_STORAGE_KEY = "ofi_course_form_prefill"
+const FILL_FORM_EVENT_NAME = "ofi:fill-course-creation-form"
+
+type ToolFillCoursePayload = {
+  titulo?: string
+  codigo?: string
+  categoria?: string
+  nivel?: "Inicial" | "Intermedio" | "Avanzado" | string
+  modalidad?: "Online" | "Presencial" | "Híbrido" | string
+  idioma?: string
+  instructor?: string
+  duracion?: number | string
+  cupo_maximo?: number | string
+  fecha_inicio?: string
+  fecha_cierre?: string
+  precio?: number | string
+  etiquetas?: string
+  descripcion?: string
+  prerrequisitos?: string
+}
+
 interface MockCourse {
   id: string
   title: string
@@ -204,11 +225,69 @@ export default function CoursesManagementView() {
   const [formData, setFormData] = useState<CourseFormState>(initialFormState)
   const [submitMessage, setSubmitMessage] = useState("")
 
+  const applyToolPrefill = (rawPayload: unknown) => {
+    if (!rawPayload || typeof rawPayload !== "object") return
+
+    const payload = rawPayload as ToolFillCoursePayload
+    const normalizedLevel = payload.nivel
+    const normalizedModality = payload.modalidad
+
+    setFormData((previous) => ({
+      ...previous,
+      title: payload.titulo ?? previous.title,
+      code: payload.codigo ?? previous.code,
+      category: payload.categoria ?? previous.category,
+      level: normalizedLevel === "Inicial" || normalizedLevel === "Intermedio" || normalizedLevel === "Avanzado"
+        ? normalizedLevel
+        : previous.level,
+      modality: normalizedModality === "Online" || normalizedModality === "Presencial" || normalizedModality === "Híbrido"
+        ? normalizedModality
+        : previous.modality,
+      language: payload.idioma ?? previous.language,
+      instructor: payload.instructor ?? previous.instructor,
+      durationHours: payload.duracion !== undefined ? String(payload.duracion) : previous.durationHours,
+      capacity: payload.cupo_maximo !== undefined ? String(payload.cupo_maximo) : previous.capacity,
+      startDate: payload.fecha_inicio ?? previous.startDate,
+      endDate: payload.fecha_cierre ?? previous.endDate,
+      price: payload.precio !== undefined ? String(payload.precio) : previous.price,
+      tags: payload.etiquetas ?? previous.tags,
+      description: payload.descripcion ?? previous.description,
+      prerequisites: payload.prerrequisitos ?? previous.prerequisites,
+    }))
+
+    setSubmitMessage("Formulario autocompletado con datos enviados por Sofia.")
+    createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   useEffect(() => {
     if (searchParams.get("view") === "create") {
       createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
     }
   }, [searchParams])
+
+  useEffect(() => {
+    const storedPayload = localStorage.getItem(COURSE_FORM_PREFILL_STORAGE_KEY)
+    if (storedPayload) {
+      try {
+        applyToolPrefill(JSON.parse(storedPayload))
+      } catch {
+        // ignore malformed storage payload
+      } finally {
+        localStorage.removeItem(COURSE_FORM_PREFILL_STORAGE_KEY)
+      }
+    }
+
+    const handleFillEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolFillCoursePayload>
+      applyToolPrefill(customEvent.detail)
+    }
+
+    window.addEventListener(FILL_FORM_EVENT_NAME, handleFillEvent as EventListener)
+
+    return () => {
+      window.removeEventListener(FILL_FORM_EVENT_NAME, handleFillEvent as EventListener)
+    }
+  }, [])
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -223,7 +302,7 @@ export default function CoursesManagementView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_1fr]">
-        <Card ref={createSectionRef}>
+        <Card>
           <CardHeader>
             <CardTitle>Cursos disponibles (mock)</CardTitle>
             <CardDescription>{MOCK_COURSES.length} cursos con información completa para pruebas visuales.</CardDescription>
@@ -273,7 +352,7 @@ export default function CoursesManagementView() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card ref={createSectionRef}>
           <CardHeader>
             <CardTitle>Crear curso</CardTitle>
             <CardDescription>Completa el formulario y envíalo. El envío es solo demostrativo.</CardDescription>

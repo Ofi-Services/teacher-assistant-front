@@ -7,6 +7,9 @@ import type { AgentExplore } from '@/types/types';
 import { useAuth } from '@/shared/hooks/use-auth';
 import SofiaAvatar3D from '../components/SofiaAvatar3D';
 
+const COURSE_FORM_PREFILL_STORAGE_KEY = 'ofi_course_form_prefill';
+const FILL_FORM_EVENT_NAME = 'ofi:fill-course-creation-form';
+
 interface VoiceChatProps {
   agentId?: string;
 }
@@ -442,6 +445,28 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           OpenCreateCourse: async () => {
             setIsDockVisible(true);
             navigate('/courses?view=create');
+          },
+          "fill-course-creation-form": async (payload: Record<string, unknown>) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][fill-course-creation-form]', payload);
+
+            localStorage.setItem(COURSE_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/courses?view=create');
+
+            window.dispatchEvent(new CustomEvent(FILL_FORM_EVENT_NAME, {
+              detail: payload || {},
+            }));
+          },
+          FillCourseCreationForm: async (payload: Record<string, unknown>) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][FillCourseCreationForm]', payload);
+
+            localStorage.setItem(COURSE_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/courses?view=create');
+
+            window.dispatchEvent(new CustomEvent(FILL_FORM_EVENT_NAME, {
+              detail: payload || {},
+            }));
           },
         },
       } as any);
