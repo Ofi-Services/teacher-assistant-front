@@ -6,11 +6,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 interface SofiaAvatar3DProps {
   mouthOpen: number;
   isSpeaking: boolean;
+  isHappy?: boolean;
+  showHappyEmoticon?: boolean;
 }
 
 interface AvatarModelProps {
   mouthOpen: number;
   isSpeaking: boolean;
+  isHappy: boolean;
 }
 
 const READY_PLAYER_ME_MODEL_URL = 'https://models.readyplayer.me/6996ded0d9645a11b168ace8.glb';
@@ -41,7 +44,7 @@ const getRoundMorphWeight = (morphName: string): number => {
   return 0.65;
 };
 
-const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
+const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking, isHappy }) => {
   const groupRef = useRef<THREE.Group>(null);
   const gltf = useLoader(GLTFLoader, READY_PLAYER_ME_MODEL_URL);
   const baseYRef = useRef(-3);
@@ -53,11 +56,13 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
 
   const smoothMouthRef = useRef(0);
   const mouthPhaseRef = useRef(Math.random() * Math.PI * 2);
+  const happyBlendRef = useRef(0);
 
-  const { scene, mouthMorphs, roundMouthMorphs } = useMemo(() => {
+  const { scene, mouthMorphs, roundMouthMorphs, happyMorphs } = useMemo(() => {
     const modelScene = gltf.scene;
     const mouth: MorphBinding[] = [];
     const roundMouth: MorphBinding[] = [];
+    const happy: MorphBinding[] = [];
 
     modelScene.traverse((node) => {
       const object3D = node as THREE.Object3D;
@@ -91,6 +96,11 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
           return;
         }
 
+        if (/(smile|mouthsmile)/.test(lowerName) && !/(frown|sad)/.test(lowerName)) {
+          happy.push({ mesh, index, weight: 1 });
+          return;
+        }
+
         if (/(viseme|mouth|jawopen|mouthopen)/.test(lowerName) && !/(smile|frown|blink|brow|eye|pucker|funnel|roll|shrug)/.test(lowerName)) {
           mouth.push({ mesh, index, weight: getMorphWeight(lowerName) });
         }
@@ -101,6 +111,7 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
       scene: modelScene,
       mouthMorphs: mouth,
       roundMouthMorphs: roundMouth,
+      happyMorphs: happy,
     };
   }, [gltf.scene]);
 
@@ -129,6 +140,9 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
     }
 
     animatedMouth = THREE.MathUtils.clamp(animatedMouth, 0, 1);
+
+    const happyTarget = isHappy ? 1 : 0;
+    happyBlendRef.current = THREE.MathUtils.lerp(happyBlendRef.current, happyTarget, 0.16);
 
     if (groupRef.current) {
       const breathingDepth = isSpeaking ? 0.012 : 0.009;
@@ -169,9 +183,10 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
         const naturalTurn = Math.sin(time * 0.42) * 0.012;
         const naturalNod = Math.sin(time * 0.95 + 0.35) * 0.01;
         const naturalTilt = Math.sin(time * 0.58 + 1.1) * 0.008;
+        const happyHeadLift = happyBlendRef.current * 0.045;
 
         const desiredHeadY = targetYaw * 0.84 + naturalTurn;
-        const desiredHeadX = -targetPitch * 0.55 + naturalNod;
+        const desiredHeadX = -targetPitch * 0.55 + naturalNod - happyHeadLift;
         const desiredHeadZ = naturalTilt;
 
         headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, desiredHeadY, 0.16);
@@ -200,6 +215,14 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
       }
     });
 
+    happyMorphs.forEach(({ mesh, index, weight }) => {
+      const current = mesh.morphTargetInfluences?.[index] ?? 0;
+      const desired = happyBlendRef.current * weight * 0.75;
+      if (mesh.morphTargetInfluences) {
+        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(current, desired, 0.2);
+      }
+    });
+
   });
 
   return (
@@ -209,18 +232,31 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
   );
 };
 
-const SofiaAvatar3D: React.FC<SofiaAvatar3DProps> = ({ mouthOpen, isSpeaking }) => {
+const SofiaAvatar3D: React.FC<SofiaAvatar3DProps> = ({
+  mouthOpen,
+  isSpeaking,
+  isHappy = false,
+  showHappyEmoticon = false,
+}) => {
   return (
-    <div className="w-full max-w-[520px] aspect-[4/5]">
+    <div className="relative w-full max-w-[520px] aspect-[4/5]">
       <Canvas shadows camera={{ position: [0, 1.45, 2.2], fov: 29 }}>
         <color attach="background" args={['#ffffff']} />
         <ambientLight intensity={0.95} />
         <directionalLight position={[2.5, 3.2, 2.2]} intensity={1.35} castShadow />
         <directionalLight position={[-2.2, 1.8, 1.2]} intensity={0.55} />
         <Suspense fallback={null}>
-          <AvatarModel mouthOpen={mouthOpen} isSpeaking={isSpeaking} />
+          <AvatarModel mouthOpen={mouthOpen} isSpeaking={isSpeaking} isHappy={isHappy} />
         </Suspense>
       </Canvas>
+      <div
+        aria-hidden={!showHappyEmoticon}
+        className={`pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-border bg-card/90 px-3 py-1 text-xl transition-opacity duration-150 ${
+          showHappyEmoticon ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        😊✨
+      </div>
     </div>
   );
 };

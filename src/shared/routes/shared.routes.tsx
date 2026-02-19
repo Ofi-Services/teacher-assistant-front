@@ -2,7 +2,7 @@
 import { Route } from "react-router-dom"
 import ProtectedRoute from "@/core/routes/ProtectedRoute"
 import AuthenticatedLayout from "../components/common/AuthenticatedLayout"
-import CoursesDashboard from "../components/common/CoursesDashboard"
+import CoursesManagementView from "../components/common/CoursesManagementView"
 import WorkInProgress from "../components/common/WorkInProgressPage"
 
 // Shared pages (accessible by all authenticated users)
@@ -20,7 +20,7 @@ export const sharedRoutes = (
       element={
         <ProtectedRoute>
           <AuthenticatedLayout>
-            <CoursesDashboard />
+            <CoursesManagementView />
           </AuthenticatedLayout>
         </ProtectedRoute>
       }

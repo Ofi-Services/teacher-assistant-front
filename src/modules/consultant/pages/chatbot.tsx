@@ -22,8 +22,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [mouthOpen, setMouthOpen] = useState(0);
+  const [isAvatarHappy, setIsAvatarHappy] = useState(false);
+  const [showHappyEmoticon, setShowHappyEmoticon] = useState(false);
   const hasAgentId = Boolean(agentId?.trim());
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const happyStateTimeoutRef = useRef<number | null>(null);
+  const happyEmoticonTimeoutRef = useRef<number | null>(null);
 
   const appendMessage = useCallback((role: 'user' | 'agent', text: string) => {
     const normalizedText = text.trim();
@@ -79,9 +83,55 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     return 'agent';
   }, []);
 
+  const parseMoodTaggedText = useCallback((text: string): { text: string; mood?: string } => {
+    const moodTagMatch = text.match(/^\s*\[([^\]]+)\]\s*(.*)$/s);
+    if (!moodTagMatch) {
+      return { text: text.trim() };
+    }
+
+    const [, rawMood, content] = moodTagMatch;
+    return {
+      mood: rawMood.trim().toLowerCase(),
+      text: content.trim(),
+    };
+  }, []);
+
+  const triggerHappyAvatar = useCallback(() => {
+    if (happyStateTimeoutRef.current) {
+      window.clearTimeout(happyStateTimeoutRef.current);
+    }
+    if (happyEmoticonTimeoutRef.current) {
+      window.clearTimeout(happyEmoticonTimeoutRef.current);
+    }
+
+    setIsAvatarHappy(true);
+    setShowHappyEmoticon(true);
+
+    happyStateTimeoutRef.current = window.setTimeout(() => {
+      setIsAvatarHappy(false);
+      happyStateTimeoutRef.current = null;
+    }, 1000);
+
+    happyEmoticonTimeoutRef.current = window.setTimeout(() => {
+      setShowHappyEmoticon(false);
+      happyEmoticonTimeoutRef.current = null;
+    }, 1000);
+  }, []);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  useEffect(() => {
+    return () => {
+      if (happyStateTimeoutRef.current) {
+        window.clearTimeout(happyStateTimeoutRef.current);
+      }
+      if (happyEmoticonTimeoutRef.current) {
+        window.clearTimeout(happyEmoticonTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Check microphone permission on component mount
   useEffect(() => {
@@ -252,13 +302,29 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
       const text = extractTextFromEvent(message);
       if (text) {
-        appendMessage(getRoleFromEvent(message), text);
+        const { text: cleanedText, mood } = parseMoodTaggedText(text);
+
+        if (mood === 'happy') {
+          triggerHappyAvatar();
+        }
+
+        if (cleanedText) {
+          appendMessage(getRoleFromEvent(message), cleanedText);
+        }
       }
     },
     onAgentChatResponsePart: (part: any) => {
       const text = extractTextFromEvent(part);
       if (text) {
-        appendMessage('agent', text);
+        const { text: cleanedText, mood } = parseMoodTaggedText(text);
+
+        if (mood === 'happy') {
+          triggerHappyAvatar();
+        }
+
+        if (cleanedText) {
+          appendMessage('agent', cleanedText);
+        }
       }
     },
   });
@@ -388,7 +454,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
               <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
             ) : (
               <div className="relative flex w-full justify-center overflow-visible">
-                <SofiaAvatar3D mouthOpen={mouthOpen} isSpeaking={status === 'connected' && isSpeaking} />
+                <SofiaAvatar3D
+                  mouthOpen={mouthOpen}
+                  isSpeaking={status === 'connected' && isSpeaking}
+                  isHappy={isAvatarHappy}
+                  showHappyEmoticon={showHappyEmoticon}
+                />
               </div>
             )}
 

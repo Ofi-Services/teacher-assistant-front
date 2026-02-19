@@ -17,7 +17,7 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Menú principal",
     items: [
-      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Gestión de cursos", icon: BookOpen, path: "/courses", active: true },
       { label: "Calendario de formación", icon: Calendar, path: "/schedule" },
       { label: "Vista de profe", icon: Users2, path: "/leader/dashboard" },
       { label: "Calendario de profe", icon: Target, path: "/leader/plans" },
@@ -40,7 +40,7 @@ export const LEADER_NAV: NavSection[] = [
   {
     title: "Menú principal",
     items: [
-      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Gestión de cursos", icon: BookOpen, path: "/courses", active: true },
       { label: "Resumen del equipo", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
       { label: "Calendario", icon: Target, path: "/leader/plans" },
@@ -62,7 +62,7 @@ export const HR_NAV: NavSection[] = [
   {
     title: "RR. HH.",
     items: [
-      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Gestión de cursos", icon: BookOpen, path: "/courses", active: true },
       { label: "Resumen del equipo", icon: Users2, path: "/hr/dashboard" },
       { label: "Vista de líder", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
