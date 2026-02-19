@@ -25,6 +25,7 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
+      { label: "AI Voice Chat", icon: MessageSquare, path: "/chatbot" },
       { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
       //{ label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
       //{ label: "Help & Support", icon: HelpCircle, path: "/support" },
