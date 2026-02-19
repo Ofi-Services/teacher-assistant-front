@@ -3,15 +3,15 @@ import RoleRoute from "@/core/routes/RoleRoute";
 import LeaderDashboard from "../pages/LeaderPage";
 import TrainingCalendar from "@/shared/components/common/calendar/CalendarSummary";
 
-const role = ["Leader"];
+const role: string[] = [];
 
 const leaderPages = [
   { path: "/leader/dashboard", element: <LeaderDashboard /> },
-  { path: "/leader/reports", element: <div>Leader Reports Page</div> },
+  { path: "/leader/reports", element: <div>Página de reportes del líder</div> },
   { path: "/leader/plans", element: < TrainingCalendar /> },
-  { path: "/leader/certificates", element: <div>Leader Certificates Page</div> },
-  { path: "/leader/messages", element: <div>Leader Messages Page</div> },
-  { path: "/leader/resources", element: <div>Leader Resources Page</div> },
+  { path: "/leader/certificates", element: <div>Página de certificados del líder</div> },
+  { path: "/leader/messages", element: <div>Página de mensajes del líder</div> },
+  { path: "/leader/resources", element: <div>Página de recursos del líder</div> },
 ];
 
 export const leaderRoutes = leaderPages.map(({ path, element }) => (

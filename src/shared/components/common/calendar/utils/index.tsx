@@ -20,11 +20,11 @@ import { TrainingTrack } from '../types';
 // ============================================================================
 
 export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export const CALENDAR_GRID_SIZE = 42; // 6 weeks * 7 days
 
@@ -71,7 +71,7 @@ export const getCategoryIcon = (
  * Get display label for a category (handles null categories)
  */
 export const getCategoryLabel = (category: string | null): string => {
-  if (!category) return 'Uncategorized';
+  if (!category) return 'Sin categoría';
   
   // Capitalize first letter of each word
   return category
@@ -184,7 +184,7 @@ export const isTrackOverdue = (track: TrainingTrack): boolean => {
  * Format due date as relative time (handles null due_date)
  */
 export const formatDueDateRelative = (dueDate: string | null): string => {
-  if (!dueDate) return 'No due date';
+  if (!dueDate) return 'Sin fecha límite';
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -196,31 +196,31 @@ export const formatDueDateRelative = (dueDate: string | null): string => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays < 0) {
-    return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+    return `Vencido hace ${Math.abs(diffDays)} día${Math.abs(diffDays) !== 1 ? 's' : ''}`;
   }
   if (diffDays === 0) {
-    return 'Due today';
+    return 'Vence hoy';
   }
   if (diffDays === 1) {
-    return 'Due tomorrow';
+    return 'Vence mañana';
   }
   if (diffDays <= 7) {
-    return `Due in ${diffDays} days`;
+    return `Vence en ${diffDays} días`;
   }
   if (diffDays <= 30) {
     const weeks = Math.floor(diffDays / 7);
-    return `Due in ${weeks} week${weeks !== 1 ? 's' : ''}`;
+    return `Vence en ${weeks} semana${weeks !== 1 ? 's' : ''}`;
   }
   
   const months = Math.floor(diffDays / 30);
-  return `Due in ${months} month${months !== 1 ? 's' : ''}`;
+  return `Vence en ${months} mes${months !== 1 ? 'es' : ''}`;
 };
 
 /**
  * Format completion date as readable string (handles null completion_date)
  */
 export const formatCompletionDate = (completionDate: string | null): string => {
-  if (!completionDate) return 'Not completed';
+  if (!completionDate) return 'No completado';
   
   const date = new Date(completionDate);
   const month = MONTH_NAMES[date.getMonth()];
@@ -252,9 +252,9 @@ export const getProgressStatus = (
   completedCourses: number,
   totalCourses: number
 ): string => {
-  if (completedCourses === 0) return 'Not started';
-  if (completedCourses === totalCourses) return 'Completed';
-  return 'In progress';
+  if (completedCourses === 0) return 'No iniciado';
+  if (completedCourses === totalCourses) return 'Completado';
+  return 'En progreso';
 };
 
 /**

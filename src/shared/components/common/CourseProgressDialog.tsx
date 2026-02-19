@@ -98,8 +98,8 @@ export default function CourseProgressDialog({
         } else {
           // Show error message if trying to check without files
           toast({
-            title: "⚠️ File required",
-            description: "You must upload at least one image to mark this module as completed",
+            title: "⚠️ Archivo requerido",
+            description: "Debes subir al menos una imagen para marcar este módulo como completado",
             variant: "destructive",
           })
         }
@@ -138,8 +138,8 @@ export default function CourseProgressDialog({
     })
 
     toast({
-      title: "✅ Image(s) added",
-      description: `${imageFiles.length} image(s) loaded for the module`,
+      title: "✅ Imagen(es) agregada(s)",
+      description: `${imageFiles.length} imagen(es) cargada(s) para el módulo`,
       variant: "default",
     })
   }
@@ -218,8 +218,8 @@ export default function CourseProgressDialog({
       const progress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0
 
       toast({
-        title: "✅ Progress updated successfully",
-        description: `You have completed ${completedCount} of ${totalModules} modules (${progress}%)`,
+        title: "✅ Progreso actualizado correctamente",
+        description: `Has completado ${completedCount} de ${totalModules} módulos (${progress}%)`,
         variant: "default",
       })
 
@@ -235,8 +235,8 @@ export default function CourseProgressDialog({
     } catch (error) {
       console.error("Error updating progress:", error)
       toast({
-        title: "❌ Error updating progress",
-        description: "There was an error saving your progress. Please try again.",
+        title: "❌ Error al actualizar el progreso",
+        description: "Hubo un error al guardar tu progreso. Inténtalo de nuevo.",
         variant: "destructive",
       })
     }
@@ -259,8 +259,8 @@ export default function CourseProgressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Training Track Progress</DialogTitle>
-          <DialogDescription>Track and update your learning progress</DialogDescription>
+          <DialogTitle className="text-2xl">Progreso del plan de formación</DialogTitle>
+          <DialogDescription>Consulta y actualiza tu progreso de aprendizaje</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -277,7 +277,7 @@ export default function CourseProgressDialog({
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Error loading course details. Please try again.
+              Error al cargar los detalles del curso. Inténtalo de nuevo.
             </AlertDescription>
           </Alert>
         ) : course ? (
@@ -312,7 +312,7 @@ export default function CourseProgressDialog({
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Current Progress</span>
+                  <span className="text-muted-foreground">Progreso actual</span>
                   <span className="font-semibold text-lg">{currentProgress}%</span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -328,7 +328,7 @@ export default function CourseProgressDialog({
                   />
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {selectedModules.size} of {course.courses?.length || 0} modules completed
+                  {selectedModules.size} de {course.courses?.length || 0} módulos completados
                 </div>
               </div>
             </div>
@@ -338,9 +338,9 @@ export default function CourseProgressDialog({
             {/* Modules List */}
             <div className="space-y-2 flex-1 min-h-0">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Course Modules</Label>
+                <Label className="text-base font-semibold">Módulos del curso</Label>
                 <span className="text-sm text-muted-foreground">
-                  {selectedModules.size}/{course.courses?.length || 0} selected
+                  {selectedModules.size}/{course.courses?.length || 0} seleccionados
                 </span>
               </div>
 
@@ -364,7 +364,7 @@ export default function CourseProgressDialog({
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        No modules available for this course.
+                        No hay módulos disponibles para este curso.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -379,7 +379,7 @@ export default function CourseProgressDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isUpdating}
               >
-                Cancel
+                Cancelar
               </Button>
               <Button
                 type="button"
@@ -387,7 +387,7 @@ export default function CourseProgressDialog({
                 disabled={isUpdating}
                 className="min-w-[100px]"
               >
-                {isUpdating ? "Saving..." : "Save Progress"}
+                {isUpdating ? "Guardando..." : "Guardar progreso"}
               </Button>
             </DialogFooter>
           </>

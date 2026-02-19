@@ -49,7 +49,7 @@ export default function Sidebar({ navigation, onLogout }: SidebarProps) {
           onClick={onLogout}
           className="w-full px-4 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm"
         >
-          Logout
+          Cerrar sesión
         </button>
       </div>
     </aside>

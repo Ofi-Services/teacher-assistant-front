@@ -155,7 +155,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
     : [];
 
   // Handle error state
-  const errorMessage = error ? 'Failed to load training data' : null;
+  const errorMessage = error ? 'No se pudieron cargar los datos de formación' : null;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -195,7 +195,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
             disabled={isLoading}
             className="glass-card flex-shrink-0"
           >
-            Today
+            Hoy
           </Button>
 
           <Button
@@ -208,7 +208,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              'Refresh'
+              'Actualizar'
             )}
           </Button>
 
@@ -359,10 +359,10 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
         <div className="w-96 border-l border-border pl-6 flex flex-col overflow-hidden flex-shrink-0">
           <div className="flex-shrink-0 mb-4 overflow-hidden">
             <h2 className="text-lg font-semibold text-foreground truncate">
-              Monthly Overview
+              Resumen mensual
             </h2>
             <p className="text-sm text-muted-foreground truncate">
-              Training statistics for {MONTH_NAMES[currentMonth]}
+              Estadísticas de formación de {MONTH_NAMES[currentMonth]}
             </p>
           </div>
 
@@ -377,7 +377,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                 {isLoading ? (
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 ) : (
-                  <p className="text-sm text-muted-foreground">No data available</p>
+                  <p className="text-sm text-muted-foreground">No hay datos disponibles</p>
                 )}
               </div>
             )}

@@ -21,9 +21,9 @@ export default function WorkInProgress() {
           </div>
 
           <div className="space-y-2">
-            <CardTitle className="text-4xl font-bold">Work in Progress</CardTitle>
+            <CardTitle className="text-4xl font-bold">En desarrollo</CardTitle>
             <CardDescription className="text-lg">
-              We're building something awesome!
+              ¡Estamos construyendo algo increíble!
             </CardDescription>
           </div>
         </CardHeader>
@@ -32,18 +32,18 @@ export default function WorkInProgress() {
           {/* Description */}
           <div className="text-center space-y-2">
             <p className="text-muted-foreground">
-              This section is currently under development. Our team is working hard to bring you 
-              new features and improvements.
+              Esta sección está en desarrollo. Nuestro equipo está trabajando para traerte 
+              nuevas funciones y mejoras.
             </p>
             <p className="text-sm text-muted-foreground">
-              Check back soon to see what we've been working on!
+              ¡Vuelve pronto para ver en qué hemos estado trabajando!
             </p>
           </div>
 
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Development Progress</span>
+              <span className="text-muted-foreground">Progreso de desarrollo</span>
               <span className="font-semibold text-primary">65%</span>
             </div>
             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -62,21 +62,21 @@ export default function WorkInProgress() {
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
+              Volver
             </Button>
             <Button 
               variant="outline" 
               className="flex-1"
               onClick={() => navigate('/dashboard')}
             >
-              Return to Home
+              Ir al inicio
             </Button>
           </div>
 
           {/* Additional Info */}
           <div className="text-center pt-4 border-t">
             <p className="text-xs text-muted-foreground">
-              Have questions or suggestions? Contact our support team.
+              ¿Tienes preguntas o sugerencias? Contacta a nuestro equipo de soporte.
             </p>
           </div>
         </CardContent>

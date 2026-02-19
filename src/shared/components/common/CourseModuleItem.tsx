@@ -46,8 +46,8 @@ export default function CourseModuleItem({
 
     if (imageFiles.length === 0) {
       toast({
-        title: "⚠️ Invalid file",
-        description: "Only image files are allowed (JPG, PNG, etc.)",
+        title: "⚠️ Archivo no válido",
+        description: "Solo se permiten imágenes (JPG, PNG, etc.)",
         variant: "destructive",
       })
       e.target.value = "" // Reset input
@@ -58,8 +58,8 @@ export default function CourseModuleItem({
     const oversizedFiles = imageFiles.filter((file) => file.size > 5 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
       toast({
-        title: "⚠️ File too large",
-        description: "Images must be smaller than 5MB",
+        title: "⚠️ Archivo demasiado grande",
+        description: "Las imágenes deben ser menores a 5 MB",
         variant: "destructive",
       })
       e.target.value = "" // Reset input
@@ -102,7 +102,7 @@ export default function CourseModuleItem({
                   className="gap-1.5 h-7 px-2"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span className="text-m">Go to training</span>
+                  <span className="text-m">Ir a la formación</span>
                 </Button>
               </a>
             )}
@@ -140,7 +140,7 @@ export default function CourseModuleItem({
             className="gap-2"
           >
             <Upload className="w-4 h-4" />
-            Upload Photos
+            Subir fotos
           </Button>
           {hasFiles && (
             <Badge variant="secondary" className="gap-1">
@@ -167,7 +167,7 @@ export default function CourseModuleItem({
                   type="button"
                   onClick={() => onFileRemove(module.id, index)}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Remove image"
+                  aria-label="Eliminar imagen"
                 >
                   <X className="w-3 h-3" />
                 </button>

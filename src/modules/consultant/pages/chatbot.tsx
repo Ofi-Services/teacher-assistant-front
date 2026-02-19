@@ -3,6 +3,7 @@ import { useConversation } from '@elevenlabs/react';
 import AgentExploreModal from '@/components/modal/agent-explore-modal';
 import { agents_explore } from '@/data/agents-explore';
 import type { AgentExplore } from '@/types/types';
+import SofiaAvatar3D from '../components/SofiaAvatar3D';
 
 interface VoiceChatProps {
   agentId?: string;
@@ -15,14 +16,12 @@ interface ChatMessage {
 }
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
-  const sofiaHeadImage = '/sofiaHead.png';
-  const sofiaSpeakingGif = '/Sofiahablando.gif';
-
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentExplore | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  const [mouthOpen, setMouthOpen] = useState(0);
   const hasAgentId = Boolean(agentId?.trim());
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,7 +90,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
         const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
         setIsPermissionGranted(result.state === 'granted');
       } catch (error) {
-        console.warn('Permission API not supported');
+        console.warn('La API de permisos no es compatible');
       }
     };
     checkPermission();
@@ -103,7 +102,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       setIsPermissionGranted(true);
       return true;
     } catch (error) {
-      console.error('Microphone access denied:', error);
+      console.error('Acceso al micrófono denegado:', error);
       return false;
     }
   };
@@ -235,6 +234,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     sendUserMessage,
     status,
     isSpeaking,
+    getOutputByteFrequencyData,
+    getOutputVolume,
   } = useConversation({
     onConnect: () => {
       console.log('Connected to conversation');
@@ -262,9 +263,37 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     },
   });
 
+  useEffect(() => {
+    let frameId = 0;
+
+    const animateMouth = () => {
+      const outputFrequency = getOutputByteFrequencyData();
+      let audioLevel = 0;
+
+      if (outputFrequency && outputFrequency.length > 0) {
+        let sum = 0;
+        for (let index = 0; index < outputFrequency.length; index += 1) {
+          sum += outputFrequency[index];
+        }
+        audioLevel = (sum / outputFrequency.length) / 255;
+      } else {
+        audioLevel = getOutputVolume();
+      }
+
+      const speechBoost = isSpeaking ? 0.08 : 0;
+      const target = Math.min(1, Math.max(0, audioLevel * 2.2 + speechBoost));
+
+      setMouthOpen((previous) => previous + (target - previous) * 0.28);
+      frameId = requestAnimationFrame(animateMouth);
+    };
+
+    frameId = requestAnimationFrame(animateMouth);
+    return () => cancelAnimationFrame(frameId);
+  }, [getOutputByteFrequencyData, getOutputVolume, isSpeaking, status]);
+
   const startConversation = useCallback(async () => {
     if (!hasAgentId || !agentId) {
-      console.error('No agent ID provided');
+      console.error('No se proporcionó un ID de agente');
       return false;
     }
 
@@ -323,7 +352,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     if (status === 'disconnected') {
       const connected = await startConversation();
       if (!connected) {
-        appendMessage('agent', 'Unable to start voice session. Please check microphone permissions and try again.');
+        appendMessage('agent', 'No se pudo iniciar la sesión de voz. Verifica los permisos del micrófono e inténtalo de nuevo.');
         return;
       }
     }
@@ -331,8 +360,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     try {
       sendUserMessage(text);
     } catch (error) {
-      console.error('Failed to send user message:', error);
-      appendMessage('agent', 'I could not receive your message. Please try again.');
+      console.error('No se pudo enviar el mensaje del usuario:', error);
+      appendMessage('agent', 'No pude recibir tu mensaje. Inténtalo de nuevo.');
     }
   }, [appendMessage, hasAgentId, messageInput, sendUserMessage, startConversation, status]);
 
@@ -344,23 +373,6 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     }
   };
 
-  const getButtonIcon = () => {
-    const activeSpeaking = status === 'connected' && isSpeaking;
-    const imageSrc = activeSpeaking ? sofiaSpeakingGif : sofiaHeadImage;
-    
-    return (
-      <div className="relative flex w-full justify-center overflow-visible">
-        <img 
-          src={imageSrc}
-          alt="Sofia AI Assistant" 
-          className={`h-auto w-full max-w-[520px] object-contain transition-all duration-500 ${
-            activeSpeaking ? 'scale-105' : 'scale-100'
-          }`}
-        />
-      </div>
-    );
-  };
-
   return (
     <>
       <div className="h-full min-h-[calc(100vh-8rem)] w-full p-4">
@@ -368,14 +380,16 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           <aside className="bg-white p-6 flex flex-col items-center justify-center gap-6">
             {!hasAgentId && (
               <div className="w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive">
-                Missing <strong>VITE_ELEVENLABS_AGENT_ID</strong> in your .env. Add it and restart the dev server.
+                Falta <strong>VITE_ELEVENLABS_AGENT_ID</strong> en tu .env. Agrégalo y reinicia el servidor de desarrollo.
               </div>
             )}
 
             {status === 'connecting' ? (
               <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
             ) : (
-              getButtonIcon()
+              <div className="relative flex w-full justify-center overflow-visible">
+                <SofiaAvatar3D mouthOpen={mouthOpen} isSpeaking={status === 'connected' && isSpeaking} />
+              </div>
             )}
 
             <button
@@ -383,19 +397,19 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
               disabled={status === 'connecting' || !hasAgentId}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {status === 'connected' ? 'End Voice Chat' : 'Start Voice Chat'}
+              {status === 'connected' ? 'Finalizar chat de voz' : 'Iniciar chat de voz'}
             </button>
           </aside>
 
           <section className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h3 className="text-sm font-semibold text-foreground">Chat</h3>
+              <h3 className="text-sm font-semibold text-foreground">Conversación</h3>
               <span className="text-xs text-muted-foreground capitalize">{status}</span>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {chatMessages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Start speaking or send a text message to begin.</p>
+                <p className="text-sm text-muted-foreground">Empieza a hablar o envía un mensaje para comenzar.</p>
               ) : (
                 chatMessages.map((message) => (
                   <div
@@ -423,7 +437,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                     void handleSendMessage();
                   }
                 }}
-                placeholder="Type a message..."
+                placeholder="Escribe un mensaje..."
                 className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
               />
               <button
@@ -431,7 +445,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                 disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
                 className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Send
+                Enviar
               </button>
             </div>
           </section>

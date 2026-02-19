@@ -6,19 +6,19 @@ export const getStatusConfig = (status: string): StatusConfig => {
     case "excellent":
       return {
         variant: "default" as const,
-        label: "Excellent",
+        label: "Excelente",
         className: "bg-green-500 hover:bg-green-600"
       }
     case "on_track":
       return {
         variant: "secondary" as const,
-        label: "On Track",
+        label: "En curso",
         className: ""
       }
     default:
       return {
         variant: "destructive" as const,
-        label: "At Risk",
+        label: "En riesgo",
         className: ""
       }
   }
@@ -30,9 +30,9 @@ export const formatDate = (dateString: string): string => {
   const diffTime = Math.abs(now.getTime() - date.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  if (diffDays === 0) return "Today"
-  if (diffDays === 1) return "Yesterday"
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  if (diffDays === 0) return "Hoy"
+  if (diffDays === 1) return "Ayer"
+  if (diffDays < 7) return `Hace ${diffDays} días`
+  if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`
+  return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
 }

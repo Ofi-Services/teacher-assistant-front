@@ -34,8 +34,8 @@ export default function LeaderDashboard() {
   // 4. Handler for the button click
   const handleGenerateReport = async () => {
     const loadingToast = toast({
-      title: "Generating Report...",
-      description: "Please wait while your team overview report is being prepared.",
+      title: "Generando reporte...",
+      description: "Espera mientras se prepara el informe general de tu equipo.",
       variant: "default",
       duration: 999999, // Keep open until updated
     })
@@ -45,16 +45,16 @@ export default function LeaderDashboard() {
 
       if (success) {
         loadingToast.update({
-          title: "✅ Report Generated!",
-          description: "The Team Overview report has been successfully created and is ready for download.",
+          title: "✅ ¡Reporte generado!",
+          description: "El informe general del equipo se creó correctamente y está listo para descargar.",
           variant: "default",
           duration: 5000,
           id: '', // Allow it to auto-remove
         })
       } else {
         loadingToast.update({
-          title: "❌ Report Generation Failed",
-          description: "An unexpected error occurred while creating the report. Please try again.",
+          title: "❌ Falló la generación del reporte",
+          description: "Ocurrió un error inesperado al crear el reporte. Inténtalo de nuevo.",
           variant: "destructive",
           duration: 5000,
           id: 'undefined', // Allow it to auto-remove
@@ -63,8 +63,8 @@ export default function LeaderDashboard() {
       }
     } catch (error) {
       loadingToast.update({
-        title: "❌ Network Error",
-        description: "Could not connect to the server to generate the report." + error,
+        title: "❌ Error de red",
+        description: "No se pudo conectar con el servidor para generar el reporte." + error,
         variant: "destructive",
         duration: 5000,
         id: 'undefined', // Allow it to auto-remove
@@ -140,29 +140,29 @@ export default function LeaderDashboard() {
   const filterConfigs: FilterConfig[] = [
     {
       key: "role",
-      label: "Role",
-      placeholder: "All Roles",
+      label: "Rol",
+      placeholder: "Todos los roles",
       options: roles.map(role => ({ value: role, label: role }))
     },
     {
       key: "region",
-      label: "Region",
-      placeholder: "All Regions",
+      label: "Región",
+      placeholder: "Todas las regiones",
       options: regions.map(region => ({ value: region, label: region }))
     },
     {
       key: "title",
-      label: "Title",
-      placeholder: "All Titles",
+      label: "Cargo",
+      placeholder: "Todos los cargos",
       options: titles.map(title => ({ value: title, label: title }))
     },
     {
       key: "status",
-      label: "Status",
-      placeholder: "All Statuses",
+      label: "Estado",
+      placeholder: "Todos los estados",
       options: [
-        { value: "at_risk", label: "At Risk" },
-        { value: "on_track", label: "On Track" }
+        { value: "at_risk", label: "En riesgo" },
+        { value: "on_track", label: "En curso" }
       ]
     }
   ]
@@ -217,7 +217,7 @@ export default function LeaderDashboard() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Failed to load team information. Please try again later.
+            No se pudo cargar la información del equipo. Inténtalo más tarde.
           </AlertDescription>
         </Alert>
       </div>
@@ -229,25 +229,25 @@ export default function LeaderDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatsCard
-          label="Team Members"
+          label="Miembros del equipo"
           value={teamStats.totalMembers}
           icon={Users2}
           color="primary"
         />
         <StatsCard
-          label="Average Progress"
+          label="Progreso promedio"
           value={`${teamStats.averageProgress}%`}
           icon={TrendingUp}
           color="success"
         />
         <StatsCard
-          label="At Risk"
+          label="En riesgo"
           value={teamStats.atRiskMembers}
           icon={AlertTriangle}
           color="warning"
         />
         <StatsCard
-          label="Top Performers"
+          label="Mejor desempeño"
           value={teamStats.topPerformers}
           icon={Award}
           color="success"
@@ -257,12 +257,12 @@ export default function LeaderDashboard() {
       {/* Team Members Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Team Progress</h2>
+          <h2 className="text-xl font-semibold">Progreso del equipo</h2>
           <Button
             onClick={handleGenerateReport}
             variant="ghost"
           >
-            <FileText className="mr-2 h-4 w-4" /> Generate Report
+            <FileText className="mr-2 h-4 w-4" /> Generar reporte
           </Button>
         </div>
 
@@ -270,7 +270,7 @@ export default function LeaderDashboard() {
         <FilterControls
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
-          searchPlaceholder="Search by name..."
+          searchPlaceholder="Buscar por nombre..."
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={updateFilter}
@@ -280,16 +280,16 @@ export default function LeaderDashboard() {
 
         {/* Results Count */}
         <div className="text-sm text-muted-foreground">
-          Showing {paginatedData.length} of {filteredAndSortedData.length} members
+          Mostrando {paginatedData.length} de {filteredAndSortedData.length} miembros
         </div>
 
         {/* Team Members Cards */}
         {filteredAndSortedData.length === 0 ? (
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No team members found</AlertTitle>
+            <AlertTitle>No se encontraron miembros del equipo</AlertTitle>
             <AlertDescription>
-              Try adjusting your search or filter to find what you're looking for.
+              Ajusta tu búsqueda o filtros para encontrar lo que buscas.
             </AlertDescription>
           </Alert>
         ) : (
@@ -312,7 +312,7 @@ export default function LeaderDashboard() {
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
-                  Previous
+                  Anterior
                 </Button>
 
                 <div className="flex gap-1">
@@ -333,7 +333,7 @@ export default function LeaderDashboard() {
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  Siguiente
                 </Button>
               </div>
             )}

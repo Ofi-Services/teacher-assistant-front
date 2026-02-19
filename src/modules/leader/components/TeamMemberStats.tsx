@@ -14,19 +14,19 @@ export default function TeamMemberStats({
 }: TeamMemberStatsProps) {
   const stats = [
     {
-      label: "Completed",
+      label: "Completados",
       value: completedCourses,
       color: "text-emerald-500",
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />
     },
     {
-      label: "In Progress",
+      label: "En progreso",
       value: activeCourses,
       color: "text-blue-500",
       icon: <BookOpen className="h-5 w-5 text-blue-500" />
     },
     {
-      label: "Overdue",
+      label: "Vencidos",
       value: overdueCourses,
       color: "text-red-500",
       icon: <AlertTriangle className="h-5 w-5 text-red-500" />

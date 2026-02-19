@@ -13,147 +13,147 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 const mockResources = [
   {
     id: "1",
-    title: "React Best Practices Guide",
-    description: "Comprehensive guide covering modern React patterns, hooks, and performance optimization techniques.",
+    title: "Guía de buenas prácticas de React",
+    description: "Guía completa que cubre patrones modernos de React, hooks y técnicas de optimización de rendimiento.",
     type: "PDF",
-    category: "Development",
+    category: "Desarrollo",
     fileSize: "2.5 MB",
-    duration: "45 min read",
+    duration: "45 min de lectura",
     accessType: "download",
     uploadedDate: "2024-10-15",
-    tags: ["React", "Frontend", "Best Practices"]
+    tags: ["React", "Frontend", "Buenas prácticas"]
   },
   {
     id: "2",
-    title: "API Design Workshop Recording",
-    description: "Workshop session covering RESTful API design principles, authentication, and documentation.",
-    type: "Video",
-    category: "Development",
+    title: "Grabación del taller de diseño de API",
+    description: "Sesión de taller sobre principios de diseño de API RESTful, autenticación y documentación.",
+    type: "Vídeo",
+    category: "Desarrollo",
     fileSize: "450 MB",
     duration: "2h 30min",
     accessType: "download",
     uploadedDate: "2024-10-12",
-    tags: ["API", "Backend", "Design"]
+    tags: ["API", "Backend", "Diseño"]
   },
   {
     id: "3",
-    title: "Leadership Skills Workbook",
-    description: "Interactive workbook with exercises and frameworks for developing leadership capabilities.",
+    title: "Cuaderno de habilidades de liderazgo",
+    description: "Cuaderno interactivo con ejercicios y marcos para desarrollar capacidades de liderazgo.",
     type: "PDF",
-    category: "Leadership",
+    category: "Liderazgo",
     fileSize: "5.2 MB",
     duration: "1h 15min",
     accessType: "download",
     uploadedDate: "2024-10-08",
-    tags: ["Leadership", "Management", "Skills"]
+    tags: ["Liderazgo", "Gestión", "Habilidades"]
   },
   {
     id: "4",
-    title: "Udemy - Advanced SQL Course",
-    description: "Complete online course covering advanced SQL techniques, optimization, and real-world projects.",
-    type: "Link",
-    category: "Development",
-    duration: "12h course",
+    title: "Udemy - Curso avanzado de SQL",
+    description: "Curso en línea completo sobre técnicas avanzadas de SQL, optimización y proyectos reales.",
+    type: "Enlace",
+    category: "Desarrollo",
+    duration: "Curso de 12 h",
     accessType: "link",
     url: "https://udemy.com/advanced-sql",
     uploadedDate: "2024-10-05",
-    tags: ["Database", "SQL", "Online Course"]
+    tags: ["Base de datos", "SQL", "Curso en línea"]
   },
   {
     id: "5",
-    title: "Agile Methodology Presentation",
-    description: "Slide deck covering Agile principles, Scrum framework, and practical implementation strategies.",
-    type: "Presentation",
-    category: "Project Management",
+    title: "Presentación sobre metodología ágil",
+    description: "Presentación sobre principios ágiles, marco Scrum y estrategias de implementación práctica.",
+    type: "Presentación",
+    category: "Gestión de proyectos",
     fileSize: "12 MB",
     duration: "30 min",
     accessType: "download",
     uploadedDate: "2024-09-28",
-    tags: ["Agile", "Scrum", "Methodology"]
+    tags: ["Ágil", "Scrum", "Metodología"]
   },
   {
     id: "6",
-    title: "Google UX Design Certificate",
-    description: "Professional certificate program covering UX design fundamentals, prototyping, and user research.",
-    type: "Link",
-    category: "Design",
-    duration: "6 months",
+    title: "Certificado de diseño UX de Google",
+    description: "Programa de certificación profesional sobre fundamentos de diseño UX, prototipado e investigación de usuarios.",
+    type: "Enlace",
+    category: "Diseño",
+    duration: "6 meses",
     accessType: "link",
     url: "https://grow.google/ux-design",
     uploadedDate: "2024-09-25",
-    tags: ["UX", "Design", "Certificate"]
+    tags: ["UX", "Diseño", "Certificado"]
   },
   {
     id: "7",
-    title: "AWS Architecture Center",
-    description: "Official AWS documentation and best practices for cloud architecture and design patterns.",
-    type: "Link",
-    category: "Development",
-    duration: "Self-paced",
+    title: "Centro de arquitectura de AWS",
+    description: "Documentación oficial de AWS y buenas prácticas para arquitectura en la nube y patrones de diseño.",
+    type: "Enlace",
+    category: "Desarrollo",
+    duration: "A tu ritmo",
     accessType: "link",
     url: "https://aws.amazon.com/architecture",
     uploadedDate: "2024-09-20",
-    tags: ["Cloud", "Architecture", "AWS"]
+    tags: ["Nube", "Arquitectura", "AWS"]
   },
   {
     id: "8",
-    title: "Communication Skills Training",
-    description: "Practical guide to improving workplace communication, presentation skills, and conflict resolution.",
-    type: "Document",
-    category: "Soft Skills",
+    title: "Formación en habilidades de comunicación",
+    description: "Guía práctica para mejorar la comunicación laboral, las habilidades de presentación y la resolución de conflictos.",
+    type: "Documento",
+    category: "Habilidades blandas",
     fileSize: "4.1 MB",
     duration: "1h 30min",
     accessType: "download",
     uploadedDate: "2024-09-15",
-    tags: ["Communication", "Soft Skills", "Presentation"]
+    tags: ["Comunicación", "Habilidades blandas", "Presentación"]
   },
   {
     id: "9",
-    title: "OWASP Security Guidelines",
-    description: "Industry-standard security guidelines and best practices from the Open Web Application Security Project.",
-    type: "Link",
-    category: "Security",
-    duration: "Ongoing reference",
+    title: "Guías de seguridad OWASP",
+    description: "Guías de seguridad estándar de la industria y buenas prácticas del Open Web Application Security Project.",
+    type: "Enlace",
+    category: "Seguridad",
+    duration: "Referencia continua",
     accessType: "link",
     url: "https://owasp.org/www-project-top-ten",
     uploadedDate: "2024-09-10",
-    tags: ["Security", "Best Practices", "OWASP"]
+    tags: ["Seguridad", "Buenas prácticas", "OWASP"]
   },
   {
     id: "10",
-    title: "LinkedIn Learning - Project Management",
-    description: "Comprehensive project management course covering planning, execution, and team leadership.",
-    type: "Link",
-    category: "Project Management",
-    duration: "8h course",
+    title: "LinkedIn Learning - Gestión de proyectos",
+    description: "Curso completo de gestión de proyectos sobre planificación, ejecución y liderazgo de equipos.",
+    type: "Enlace",
+    category: "Gestión de proyectos",
+    duration: "Curso de 8 h",
     accessType: "link",
     url: "https://linkedin.com/learning/project-management",
     uploadedDate: "2024-09-05",
-    tags: ["Project Management", "Leadership", "Online Course"]
+    tags: ["Gestión de proyectos", "Liderazgo", "Curso en línea"]
   },
   {
     id: "11",
-    title: "Docker and Kubernetes Guide",
-    description: "Complete guide to containerization with Docker and orchestration with Kubernetes.",
+    title: "Guía de Docker y Kubernetes",
+    description: "Guía completa de contenerización con Docker y orquestación con Kubernetes.",
     type: "PDF",
-    category: "Development",
+    category: "Desarrollo",
     fileSize: "6.3 MB",
-    duration: "2h read",
+    duration: "2 h de lectura",
     accessType: "download",
     uploadedDate: "2024-08-30",
     tags: ["Docker", "Kubernetes", "DevOps"]
   },
   {
     id: "12",
-    title: "Coursera - Data Science Specialization",
-    description: "Johns Hopkins University's comprehensive data science program covering R, statistics, and machine learning.",
-    type: "Link",
-    category: "Data Science",
-    duration: "11 months",
+    title: "Coursera - Especialización en ciencia de datos",
+    description: "Programa integral de ciencia de datos de la Universidad Johns Hopkins sobre R, estadística y aprendizaje automático.",
+    type: "Enlace",
+    category: "Ciencia de datos",
+    duration: "11 meses",
     accessType: "link",
     url: "https://coursera.org/specializations/jhu-data-science",
     uploadedDate: "2024-08-25",
-    tags: ["Data Science", "Machine Learning", "Statistics"]
+    tags: ["Ciencia de datos", "Aprendizaje automático", "Estadística"]
   }
 ]
 
@@ -162,10 +162,10 @@ function ResourceCard({ resource }: { resource: typeof mockResources[0] }) {
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
       PDF: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-      Video: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-      Document: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-      Presentation: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-      Link: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+      "Vídeo": "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+      Documento: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+      Presentación: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+      Enlace: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
     }
     return colors[type] || "bg-gray-100 text-gray-800"
   }
@@ -209,12 +209,12 @@ function ResourceCard({ resource }: { resource: typeof mockResources[0] }) {
             {isLink ? (
               <>
                 <ExternalLink className="w-4 h-4" />
-                <span>External resource</span>
+                <span>Recurso externo</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Downloadable file</span>
+                <span>Archivo descargable</span>
               </>
             )}
           </div>
@@ -226,17 +226,17 @@ function ResourceCard({ resource }: { resource: typeof mockResources[0] }) {
           <Button className="flex-1" variant="default" asChild>
             <a href={resource.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Open Link
+              Abrir enlace
             </a>
           </Button>
         ) : (
           <>
             <Button className="flex-1" variant="default">
               <Download className="w-4 h-4 mr-2" />
-              Download
+              Descargar
             </Button>
             <Button variant="outline">
-              Preview
+              Vista previa
             </Button>
           </>
         )}
@@ -285,7 +285,7 @@ export default function TrainingResources() {
     return (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Training Resources</h1>
+          <h1 className="text-3xl font-bold">Recursos de formación</h1>
           <Skeleton className="h-10 w-40" />
         </div>
         
@@ -309,10 +309,10 @@ export default function TrainingResources() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Training Resources</h1>
+        <h1 className="text-3xl font-bold">Recursos de formación</h1>
         <Button variant="default">
           <FileText className="w-4 h-4 mr-2" />
-          Upload Resource
+          Subir recurso
         </Button>
       </div>
 
@@ -323,7 +323,7 @@ export default function TrainingResources() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             type="text"
-            placeholder="Search resources..."
+            placeholder="Buscar recursos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -333,10 +333,10 @@ export default function TrainingResources() {
         {/* Category Filter */}
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">Todas las categorías</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
@@ -348,10 +348,10 @@ export default function TrainingResources() {
         {/* Type Filter */}
         <Select value={selectedType} onValueChange={setSelectedType}>
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="All Types" />
+            <SelectValue placeholder="Todos los tipos" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="all">Todos los tipos</SelectItem>
             {types.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -363,16 +363,16 @@ export default function TrainingResources() {
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {filteredResources.length} of {mockResources.length} resources
+        Mostrando {filteredResources.length} de {mockResources.length} recursos
       </div>
 
       {/* Resource Cards */}
       {filteredResources.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No resources found</AlertTitle>
+          <AlertTitle>No se encontraron recursos</AlertTitle>
           <AlertDescription>
-            Try adjusting your search or filters to find what you're looking for.
+            Ajusta la búsqueda o los filtros para encontrar lo que necesitas.
           </AlertDescription>
         </Alert>
       ) : (

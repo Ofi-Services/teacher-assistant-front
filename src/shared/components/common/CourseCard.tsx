@@ -73,17 +73,17 @@ export default function CourseCard({
   const [dialogOpen, setDialogOpen] = useState(false)
 
   let progressColor = "bg-destructive"
-  let progressLabel = "Needs attention"
+  let progressLabel = "Necesita atención"
   
   if (progress < 50) {
     progressColor = "bg-destructive"
-    progressLabel = "Needs attention"
+    progressLabel = "Necesita atención"
   } else if (progress >= 85) {
     progressColor = "bg-green-500"
-    progressLabel = "Almost there!"
+    progressLabel = "¡Casi listo!"
   } else if (progress >= 60) {
     progressColor = "bg-primary"
-    progressLabel = "Good progress"
+    progressLabel = "Buen progreso"
   }
 
   // Obtener el estilo de la categoría
@@ -144,7 +144,7 @@ export default function CourseCard({
               {formattedDueDate && (
                 <div className="flex items-center gap-1.5 text-foreground font-medium">
                   <Calendar className="w-4 h-4 text-primary" />
-                  <span>Due: {formattedDueDate}</span>
+                  <span>Vence: {formattedDueDate}</span>
                 </div>
               )}
             </div>
@@ -166,7 +166,7 @@ export default function CourseCard({
 
           {/* Course Info */}
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} modules completed
+            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} módulos completados
           </div>
 
           {/* Action Button */}
@@ -175,7 +175,7 @@ export default function CourseCard({
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             size="lg"
           >
-            Continue Training Track
+            Continuar plan de formación
           </Button>
         </CardContent>
       </Card>

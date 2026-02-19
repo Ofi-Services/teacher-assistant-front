@@ -70,7 +70,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="truncate">Progress Overview</span>
+              <span className="truncate">Resumen de progreso</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -78,7 +78,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               {/* Total Tracks */}
               <div className="text-center p-3 rounded-lg bg-secondary/10 border">
                 <p className="text-xs text-muted-foreground mb-1 font-medium">
-                  Total Tracks
+                  Rutas totales
                 </p>
                 <p className="text-2xl font-bold text-foreground">
                   {summary.totalTracks}
@@ -88,7 +88,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               {/* Completed */}
               <div className="text-center p-3 rounded-lg bg-secondary/10 border">
                 <p className="text-xs text-muted-foreground mb-1 font-medium">
-                  Completed
+                  Completadas
                 </p>
                 <p className="text-2xl font-bold text-foreground">
                   {summary.completedTracks}
@@ -98,7 +98,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               {/* In Progress */}
               <div className="text-center p-3 rounded-lg bg-secondary/10 border">
                 <p className="text-xs text-muted-foreground mb-1 font-medium">
-                  In Progress
+                  En progreso
                 </p>
                 <p className="text-2xl font-bold text-foreground">
                   {summary.inProgressTracks}
@@ -108,7 +108,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               {/* Total Courses */}
               <div className="text-center p-3 rounded-lg bg-secondary/10 border">
                 <p className="text-xs text-muted-foreground mb-1 font-medium">
-                  Total Courses
+                  Cursos totales
                 </p>
                 <p className="text-2xl font-bold text-foreground">
                   {summary.totalCourses}
@@ -119,7 +119,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground font-medium">
-                  Track Completion Rate
+                  Tasa de finalización de rutas
                 </span>
                 <span className="font-bold text-foreground">
                   {completionRate}%
@@ -143,7 +143,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-green-600 flex-shrink-0" />
-                  <span className="truncate">Courses Completed</span>
+                  <span className="truncate">Cursos completados</span>
                 </span>
                 <span className="font-medium text-green-600 flex-shrink-0">
                   {summary.completedCourses}
@@ -151,7 +151,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               </div>
               <div className="flex items-center justify-between text-xs pt-1">
                 <span className="text-muted-foreground truncate">
-                  Course Completion Rate
+                  Tasa de finalización de cursos
                 </span>
                 <span className="font-medium flex-shrink-0">
                   {coursesCompletionRate}%
@@ -203,7 +203,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
                         className="text-xs truncate max-w-[150px]"
                         title={`${getCategoryLabel(cat.category)}: ${
                           cat.totalTracks
-                        } tracks`}
+                        } rutas`}
                       >
                         {getCategoryLabel(cat.category)} ({cat.totalTracks})
                       </Badge>
@@ -282,12 +282,12 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               <CardTitle className="text-sm flex items-center justify-between gap-2 min-w-0">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Award className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="truncate">Platforms</span>
+                  <span className="truncate">Plataformas</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {!platformsOpen && (
                     <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">
-                      {summary.platformsBreakdown.length} platforms
+                      {summary.platformsBreakdown.length} plataformas
                     </span>
                   )}
                   {platformsOpen ? (
@@ -314,7 +314,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
                         className="text-xs truncate max-w-[150px]"
                         title={`${getPlatformLabel(plat.platform)}: ${
                           plat.totalTracks
-                        } tracks`}
+                        } rutas`}
                       >
                         {getPlatformLabel(plat.platform)} ({plat.totalTracks})
                       </Badge>
@@ -391,13 +391,13 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               <CardTitle className="text-sm flex items-center justify-between gap-2 min-w-0">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Circle className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="truncate">Upcoming Deadlines</span>
+                  <span className="truncate">Próximos vencimientos</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {!deadlinesOpen && (
                     <Badge variant="destructive" className="text-xs">
                       {summary.upcomingDeadlines.filter(isTrackOverdue).length}{" "}
-                      overdue
+                      vencidos
                     </Badge>
                   )}
                   {deadlinesOpen ? (
@@ -414,14 +414,14 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               <CardContent className="pt-0">
                 <div className="text-xs text-muted-foreground">
                   <span className="truncate">
-                    {summary.upcomingDeadlines.length} pending tracks
+                    {summary.upcomingDeadlines.length} rutas pendientes
                   </span>
                   {summary.upcomingDeadlines.filter(isTrackOverdue).length >
                     0 && (
                     <span className="text-red-600 font-medium ml-2 whitespace-nowrap">
                       ·{" "}
                       {summary.upcomingDeadlines.filter(isTrackOverdue).length}{" "}
-                      need attention
+                      requieren atención
                     </span>
                   )}
                 </div>
@@ -458,7 +458,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
                                 ? "text-red-600 font-medium"
                                 : "text-muted-foreground"
                             }`}
-                            title={track.due_date || "not defined"}
+                              title={track.due_date || "no definida"}
                           >
                             {formatDueDateRelative(track.due_date)}
                           </p>
@@ -494,12 +494,12 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
             <CardTitle className="text-sm flex items-center justify-between gap-2 min-w-0">
               <div className="flex items-center gap-2 flex-shrink-0">
                 <CircleDot className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="truncate">Activity Summary</span>
+                <span className="truncate">Resumen de actividad</span>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!activityOpen && (
                   <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">
-                    {Object.keys(summary.dailySummaries).length} days active
+                    {Object.keys(summary.dailySummaries).length} días activos
                   </span>
                 )}
                 {activityOpen ? (
@@ -516,15 +516,15 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
             <CardContent className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2 rounded-md bg-muted/30 gap-2 min-w-0">
                 <span className="text-muted-foreground truncate">
-                  Active Days
+                  Días activos
                 </span>
                 <span className="font-medium flex-shrink-0 whitespace-nowrap">
-                  {Object.keys(summary.dailySummaries).length} days
+                  {Object.keys(summary.dailySummaries).length} días
                 </span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-md bg-muted/30 gap-2 min-w-0">
                 <span className="text-muted-foreground truncate">
-                  Avg. Tracks/Day
+                  Promedio de rutas/día
                 </span>
                 <span className="font-medium flex-shrink-0">
                   {Object.keys(summary.dailySummaries).length > 0
@@ -538,7 +538,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               {summary.categoriesBreakdown.length > 0 && (
                 <div className="flex items-center justify-between p-2 rounded-md bg-muted/30 gap-2 min-w-0">
                   <span className="text-muted-foreground truncate">
-                    Top Category
+                    Categoría principal
                   </span>
                   <Badge
                     variant="outline"

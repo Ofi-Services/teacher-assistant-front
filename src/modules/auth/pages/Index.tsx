@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     const success = await login(email, password)
     if (!success) {
-      setError("Incorrect credentials. Please try again.")
+      setError("Credenciales incorrectas. Inténtalo de nuevo.")
       setIsLoading(false)
     }
   }
@@ -33,7 +33,7 @@ export default function LoginPage() {
     setIsLoading(true)
     void login(email || "talent@ofi.mock", password || "mock-password").then((success) => {
       if (!success) {
-        setError("Unable to sign in with mock Microsoft flow.")
+        setError("No se pudo iniciar sesión con el flujo simulado de Microsoft.")
         setIsLoading(false)
       }
     })
@@ -54,7 +54,7 @@ export default function LoginPage() {
               Ofi <span className="text-primary">Academy</span>
             </h1>
             <p className="text-muted-foreground mt-2 text-base">
-              Boost your learning to the next level
+              Impulsa tu aprendizaje al siguiente nivel
             </p>
           </div>
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="tu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -79,7 +79,7 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-base text-foreground">
-                    Password
+                    Contraseña
                   </Label>
                   <Input
                     id="password"
@@ -104,7 +104,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                   className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
                 >
-                  {isLoading ? "Signing in..." : "Sign In"}
+                  {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
                 </Button>
               </form>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">O continúa con</span>
                 </div>
               </div>
             </>
@@ -132,7 +132,7 @@ export default function LoginPage() {
             }`}
           >
             <Shield className="mr-2 h-5 w-5" />
-            Sign in with Microsoft
+            Iniciar sesión con Microsoft
           </Button>
         </div>
       </div>
@@ -144,25 +144,25 @@ export default function LoginPage() {
 
         <div className="relative z-10 max-w-lg">
           <h2 className="text-5xl font-bold mb-6 text-balance leading-tight">
-            Transform your career through continuous learning
+            Transforma tu carrera mediante el aprendizaje continuo
           </h2>
           <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-            Access specialized courses, track your progress, and achieve your professional goals.
+            Accede a cursos especializados, sigue tu progreso y alcanza tus metas profesionales.
           </p>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-6">
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">50+</p>
-              <p className="text-sm text-primary-foreground/80">Courses</p>
+              <p className="text-sm text-primary-foreground/80">Cursos</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">200+</p>
-              <p className="text-sm text-primary-foreground/80">Consultants</p>
+              <p className="text-sm text-primary-foreground/80">Consultores</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">95%</p>
-              <p className="text-sm text-primary-foreground/80">Satisfaction</p>
+              <p className="text-sm text-primary-foreground/80">Satisfacción</p>
             </div>
           </div>
         </div>

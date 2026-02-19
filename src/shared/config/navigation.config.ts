@@ -15,17 +15,19 @@ export interface NavSection {
 
 export const CONSULTANT_NAV: NavSection[] = [
   {
-    title: "Main Menu",
+    title: "Menú principal",
     items: [
-      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
-      { label: "Training Schedule", icon: Calendar, path: "/schedule" },
+      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Calendario de formación", icon: Calendar, path: "/schedule" },
+      { label: "Vista de profe", icon: Users2, path: "/leader/dashboard" },
+      { label: "Calendario de profe", icon: Target, path: "/leader/plans" },
       //{ label: "Course Resources", icon: BookOpen, path: "/resources" },
     ],
   },
   {
-    title: "Quick Links",
+    title: "Enlaces rápidos",
     items: [
-      { label: "AI Voice Chat", icon: MessageSquare, path: "/chatbot" },
+      { label: "Habla con Sofia", icon: MessageSquare, path: "/chatbot" },
       { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
       //{ label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
       //{ label: "Help & Support", icon: HelpCircle, path: "/support" },
@@ -36,17 +38,17 @@ export const CONSULTANT_NAV: NavSection[] = [
 
 export const LEADER_NAV: NavSection[] = [
   {
-    title: "Main Menu",
+    title: "Menú principal",
     items: [
-      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
-      { label: "Team Overview", icon: Users2, path: "/leader/dashboard" },
+      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Resumen del equipo", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
-      { label: "Calendar", icon: Target, path: "/leader/plans" },
+      { label: "Calendario", icon: Target, path: "/leader/plans" },
       //{ label: "Certificates", icon: Award, path: "/leader/certificates" },
     ],
   },
   {
-    title: "Quick Links",
+    title: "Enlaces rápidos",
     items: [
       { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
       //{ label: "Team Messages", icon: MessageSquare, path: "/leader/messages" },
@@ -58,20 +60,22 @@ export const LEADER_NAV: NavSection[] = [
 
 export const HR_NAV: NavSection[] = [
   {
-    title: "HR",
+    title: "RR. HH.",
     items: [
-      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
-      { label: "Team Overview", icon: Users2, path: "/hr/dashboard" },
+      { label: "Mi progreso", icon: BookOpen, path: "/courses", active: true },
+      { label: "Resumen del equipo", icon: Users2, path: "/hr/dashboard" },
+      { label: "Vista de líder", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
-      { label: "Calendar", icon: Target, path: "/hr/plans" },
+      { label: "Calendario", icon: Target, path: "/hr/plans" },
+      { label: "Calendario de líder", icon: Target, path: "/leader/plans" },
       //{ label: "Certificates", icon: Award, path: "/leader/certificates" },
     ],
   },
   {
-    title: "Quick Links",
+    title: "Enlaces rápidos",
     items: [
-      { label: "System Settings", icon: Settings, path: "/superuser/settings" },
-      { label: "Help & Support", icon: HelpCircle, path: "/support" },
+      { label: "Configuración del sistema", icon: Settings, path: "/superuser/settings" },
+      { label: "Ayuda y soporte", icon: HelpCircle, path: "/support" },
       { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
     ],
   },

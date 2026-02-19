@@ -208,7 +208,7 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
 
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Overall Progress</span>
+                <span className="text-muted-foreground">Progreso general</span>
                 <span className="font-medium">{completionRate}%</span>
               </div>
               <Progress value={completionRate} className="h-1.5" />
@@ -218,13 +218,13 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3 text-green-600" />
                 <span className="text-muted-foreground">
-                  {daySummary!.completedTracks} completed
+                  {daySummary!.completedTracks} completadas
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <Circle className="w-3 h-3 text-blue-600" />
                 <span className="text-muted-foreground">
-                  {daySummary!.inProgressTracks} in progress
+                  {daySummary!.inProgressTracks} en progreso
                 </span>
               </div>
             </div>
@@ -305,7 +305,7 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <BookOpen className="w-3 h-3" />
                               <span>
-                                {track.completed_courses}/{track.total_courses} courses
+                                {track.completed_courses}/{track.total_courses} cursos
                               </span>
                             </div>
                             <span className="font-medium">{trackProgress}%</span>
@@ -327,7 +327,7 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
               <div className="px-4 py-2 bg-muted/30">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-muted-foreground">
-                    Categories:
+                    Categorías:
                   </span>
                   {Object.entries(daySummary!.tracksByCategory).map(
                     ([category, count]) => (

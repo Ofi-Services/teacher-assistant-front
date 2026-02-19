@@ -78,14 +78,14 @@ export default function CoursesDashboard() {
   const filterConfigs: FilterConfig[] = [
     {
       key: "category",
-      label: "Category",
-      placeholder: "All Categories",
+      label: "Categoría",
+      placeholder: "Todas las categorías",
       options: categories.map(category => ({ value: category, label: category }))
     },
     {
       key: "platform",
-      label: "Platform",
-      placeholder: "All Platforms",
+      label: "Plataforma",
+      placeholder: "Todas las plataformas",
       icon: Monitor,
       options: platforms.map(platform => ({ value: platform, label: platform }))
     }
@@ -127,7 +127,7 @@ export default function CoursesDashboard() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Unable to load your progress data. Please try again later.
+            No se pudieron cargar tus datos de progreso. Inténtalo más tarde.
           </AlertDescription>
         </Alert>
       </div>
@@ -140,19 +140,19 @@ export default function CoursesDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard
-          label="Active Courses"
+          label="Cursos activos"
           value={progress?.activeCourses || 0}
           icon={BookOpen}
           color="success"
         />
         <StatsCard
-          label="Average Progress"
+          label="Progreso promedio"
           value={`${progress?.averageProgress || 0}%`}
           icon={TrendingUp}
           color="success"
         />
         <StatsCard
-          label="Completed Modules"
+          label="Módulos completados"
           value={progress?.completedModules || 0}
           icon={Award}
           color="success"
@@ -163,7 +163,7 @@ export default function CoursesDashboard() {
       <FilterControls
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Search courses..."
+        searchPlaceholder="Buscar cursos..."
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={updateFilter}
@@ -173,16 +173,16 @@ export default function CoursesDashboard() {
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {paginatedData.length} of {filteredAndSortedData.length} courses
+        Mostrando {paginatedData.length} de {filteredAndSortedData.length} cursos
       </div>
 
       {/* Course Cards */}
       {filteredAndSortedData.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No courses found</AlertTitle>
+          <AlertTitle>No se encontraron cursos</AlertTitle>
           <AlertDescription>
-            Try adjusting your search or filter to find what you're looking for.
+            Ajusta tu búsqueda o filtros para encontrar lo que estás buscando.
           </AlertDescription>
         </Alert>
       ) : (
@@ -213,7 +213,7 @@ export default function CoursesDashboard() {
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
-                Previous
+                Anterior
               </Button>
               
               <div className="flex gap-1">
@@ -234,7 +234,7 @@ export default function CoursesDashboard() {
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
               >
-                Next
+                Siguiente
               </Button>
             </div>
           )}

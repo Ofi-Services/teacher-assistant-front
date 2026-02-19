@@ -75,19 +75,19 @@ export default function TrainingTracksDialog({
   const filterConfigs: FilterConfig[] = [
     {
       key: "status",
-      label: "Status",
-      placeholder: "All Statuses",
+      label: "Estado",
+      placeholder: "Todos los estados",
       icon: CheckCircle2,
       options: [
-        { value: "completed", label: "Completed" },
-        { value: "in_progress", label: "In Progress" },
-        { value: "overdue", label: "Overdue" }
+        { value: "completed", label: "Completado" },
+        { value: "in_progress", label: "En progreso" },
+        { value: "overdue", label: "Vencido" }
       ]
     },
     {
       key: "progress",
-      label: "Progress",
-      placeholder: "All Progress",
+      label: "Progreso",
+      placeholder: "Todo el progreso",
       icon: TrendingUp,
       options: [
         { value: "0-25", label: "0-25%" },
@@ -98,14 +98,14 @@ export default function TrainingTracksDialog({
     },
     {
       key: "dueDate",
-      label: "Due Date",
-      placeholder: "All Due Dates",
+      label: "Fecha límite",
+      placeholder: "Todas las fechas límite",
       icon: Calendar,
       options: [
-        { value: "this_week", label: "This Week" },
-        { value: "this_month", label: "This Month" },
-        { value: "next_month", label: "Next Month" },
-        { value: "overdue", label: "Overdue" }
+        { value: "this_week", label: "Esta semana" },
+        { value: "this_month", label: "Este mes" },
+        { value: "next_month", label: "Próximo mes" },
+        { value: "overdue", label: "Vencido" }
       ]
     }
   ]
@@ -216,7 +216,7 @@ const filteredTracks = useMemo(() => {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -225,12 +225,12 @@ const filteredTracks = useMemo(() => {
 
   const getStatusBadge = (track: TrainingTrack) => {
     if (track.is_completed) {
-      return <Badge className="bg-green-500">Completed</Badge>
+      return <Badge className="bg-green-500">Completado</Badge>
     }
     if (track.is_overdue) {
-      return <Badge variant="destructive">Overdue</Badge>
+      return <Badge variant="destructive">Vencido</Badge>
     }
-    return <Badge variant="secondary">In Progress</Badge>
+    return <Badge variant="secondary">En progreso</Badge>
   }
 
   return (
@@ -248,12 +248,12 @@ const filteredTracks = useMemo(() => {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                Training Track - Details
+                Plan de formación - Detalles
               </>
             ) : (
               <>
                 <BookOpen className="h-5 w-5" />
-                {userName}'s Training Tracks
+                Planes de formación de {userName}
               </>
             )}
           </DialogTitle>
@@ -267,7 +267,7 @@ const filteredTracks = useMemo(() => {
               <FilterControls
                 searchValue={searchValue}
                 onSearchChange={setSearchValue}
-                searchPlaceholder="Search by title or platform..."
+                searchPlaceholder="Buscar por título o plataforma..."
                 filters={filterConfigs}
                 filterValues={filterValues}
                 onFilterChange={handleFilterChange}
@@ -289,7 +289,7 @@ const filteredTracks = useMemo(() => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Error loading training tracks. Please try again.
+                  Error al cargar los planes de formación. Inténtalo de nuevo.
                 </AlertDescription>
               </Alert>
             )}
@@ -298,7 +298,7 @@ const filteredTracks = useMemo(() => {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This user has no assigned training tracks.
+                  Este usuario no tiene planes de formación asignados.
                 </AlertDescription>
               </Alert>
             )}
@@ -307,7 +307,7 @@ const filteredTracks = useMemo(() => {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  No training tracks match your filters. Try adjusting your search or filters.
+                  Ningún plan coincide con tus filtros. Ajusta la búsqueda o los filtros.
                 </AlertDescription>
               </Alert>
             )}
@@ -325,7 +325,7 @@ const filteredTracks = useMemo(() => {
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-1">{track.title}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Platform: {track.platform}
+                          Plataforma: {track.platform}
                         </p>
                       </div>
                       {getStatusBadge(track)}
@@ -334,7 +334,7 @@ const filteredTracks = useMemo(() => {
                     {/* Progress */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progress</span>
+                        <span className="text-muted-foreground">Progreso</span>
                         <span className="font-medium">{track.progress_percentage}%</span>
                       </div>
                       <Progress value={track.progress_percentage} className="h-2" />
@@ -358,7 +358,7 @@ const filteredTracks = useMemo(() => {
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-orange-500" />
                         <span className="text-muted-foreground">
-                          {track.is_overdue ? "Overdue" : "Active"}
+                          {track.is_overdue ? "Vencido" : "Activo"}
                         </span>
                       </div>
                     </div>
@@ -383,7 +383,7 @@ const filteredTracks = useMemo(() => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Error loading details. Please try again.
+                  Error al cargar los detalles. Inténtalo de nuevo.
                 </AlertDescription>
               </Alert>
             )}
@@ -405,14 +405,14 @@ const filteredTracks = useMemo(() => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            Due: {formatDate(trackDetail.training_track.due_date)}
+                            Vence: {formatDate(trackDetail.training_track.due_date)}
                           </span>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Overall Progress</span>
+                          <span>Progreso general</span>
                           <span className="font-semibold">
                             {trackDetail.assignment.progress_percentage}%
                           </span>
@@ -422,7 +422,7 @@ const filteredTracks = useMemo(() => {
                           className="h-2" 
                         />
                         <p className="text-sm text-muted-foreground">
-                          {trackDetail.assignment.completed_courses} of {trackDetail.training_track.total_courses} courses completed
+                          {trackDetail.assignment.completed_courses} de {trackDetail.training_track.total_courses} cursos completados
                         </p>
                       </div>
                     </div>
@@ -440,12 +440,12 @@ const filteredTracks = useMemo(() => {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="text-sm font-medium text-muted-foreground">
-                                  Course {currentCourseIndex + 1} of {trackDetail.courses.length}
+                                  Curso {currentCourseIndex + 1} de {trackDetail.courses.length}
                                 </span>
                                 {trackDetail.courses[currentCourseIndex].completed && (
                                   <Badge className="bg-green-500">
                                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    Completed
+                                    Completado
                                   </Badge>
                                 )}
                               </div>
@@ -469,7 +469,7 @@ const filteredTracks = useMemo(() => {
                                       rel="noopener noreferrer"
                                       className="text-xs text-blue-500 hover:underline"
                                     >
-                                      View Evidence
+                                      Ver evidencia
                                     </a>
                                   )}
                                 </div>
@@ -480,7 +480,7 @@ const filteredTracks = useMemo(() => {
                               <div className="flex items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
                                 <Clock className="h-5 w-5 text-orange-500" />
                                 <p className="text-sm text-orange-700 dark:text-orange-300">
-                                  Pending Completion
+                                  Pendiente de completar
                                 </p>
                               </div>
                             )}
@@ -497,7 +497,7 @@ const filteredTracks = useMemo(() => {
                         disabled={currentCourseIndex === 0}
                       >
                         <ChevronLeft className="h-4 w-4 mr-2" />
-                        Previous
+                        Anterior
                       </Button>
 
                       <span className="text-sm text-muted-foreground">
@@ -509,7 +509,7 @@ const filteredTracks = useMemo(() => {
                         onClick={handleNextCourse}
                         disabled={currentCourseIndex === trackDetail.courses.length - 1}
                       >
-                        Next
+                        Siguiente
                         <ChevronRight className="h-4 w-4 ml-2" />
                       </Button>
                     </div>
