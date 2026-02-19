@@ -3,14 +3,13 @@ import RoleRoute from "@/core/routes/RoleRoute";
 import TrainingCalendar from "@/shared/components/common/calendar/CalendarSummary";
 import TrainingResources from "../pages/TrainingResoursesPage";
 import WorkInProgress from "@/shared/components/common/WorkInProgressPage";
-import VoiceChat from "../pages/chatbot";
 
 const role = ["Talent"]; // 👈 Define el rol aquí una sola vez
 
 const Schedule = () => <TrainingCalendar />;
 const Resources = () => <TrainingResources />;
 const Forums = () => <WorkInProgress />;
-const Chatbot = () => <VoiceChat agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID || ""} />;
+const Chatbot = () => null;
 
 export const consultantRoutes = (
   <>

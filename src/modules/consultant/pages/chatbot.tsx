@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useConversation } from '@elevenlabs/react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AgentExploreModal from '@/components/modal/agent-explore-modal';
 import { agents_explore } from '@/data/agents-explore';
 import type { AgentExplore } from '@/types/types';
+import { useAuth } from '@/shared/hooks/use-auth';
 import SofiaAvatar3D from '../components/SofiaAvatar3D';
 
 interface VoiceChatProps {
@@ -16,6 +18,9 @@ interface ChatMessage {
 }
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentExplore | null>(null);
@@ -24,10 +29,23 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const [mouthOpen, setMouthOpen] = useState(0);
   const [isAvatarHappy, setIsAvatarHappy] = useState(false);
   const [showHappyEmoticon, setShowHappyEmoticon] = useState(false);
+  const [isDockVisible, setIsDockVisible] = useState(false);
   const hasAgentId = Boolean(agentId?.trim());
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const happyStateTimeoutRef = useRef<number | null>(null);
   const happyEmoticonTimeoutRef = useRef<number | null>(null);
+  const isFullView = location.pathname === '/chatbot';
+  const isElevenLabsDebugEnabled = import.meta.env.VITE_DEBUG_ELEVENLABS === 'true';
+
+  const logElevenLabsDebug = useCallback((...args: unknown[]) => {
+    if (!isElevenLabsDebugEnabled) return;
+    console.log(...args);
+  }, [isElevenLabsDebugEnabled]);
+
+  const logElevenLabsError = useCallback((...args: unknown[]) => {
+    if (!isElevenLabsDebugEnabled) return;
+    console.error(...args);
+  }, [isElevenLabsDebugEnabled]);
 
   const appendMessage = useCallback((role: 'user' | 'agent', text: string) => {
     const normalizedText = text.trim();
@@ -158,7 +176,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   };
 
   const handleJsonResponse = (data: any) => {
-    console.log('Received JSON data:', data);
+    logElevenLabsDebug('[ElevenLabs][IN][JSON]', data);
     
     // Try to extract message content from various possible formats
     let messageContent = data;
@@ -288,16 +306,16 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     getOutputVolume,
   } = useConversation({
     onConnect: () => {
-      console.log('Connected to conversation');
+      logElevenLabsDebug('[ElevenLabs][STATE] Connected to conversation');
     },
     onDisconnect: () => {
-      console.log('Disconnected from conversation');
+      logElevenLabsDebug('[ElevenLabs][STATE] Disconnected from conversation');
     },
     onError: (error: any) => {
-      console.error('Conversation error:', error);
+      logElevenLabsError('[ElevenLabs][IN][ERROR]', error);
     },
     onMessage: (message: any) => {
-      console.log('Received message:', message);
+      logElevenLabsDebug('[ElevenLabs][IN][MESSAGE]', message);
       handleJsonResponse(message);
 
       const text = extractTextFromEvent(message);
@@ -314,6 +332,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       }
     },
     onAgentChatResponsePart: (part: any) => {
+      logElevenLabsDebug('[ElevenLabs][IN][AGENT_PART]', part);
       const text = extractTextFromEvent(part);
       if (text) {
         const { text: cleanedText, mood } = parseMoodTaggedText(text);
@@ -328,6 +347,12 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       }
     },
   });
+
+  useEffect(() => {
+    if (status === 'connected' || status === 'connecting') {
+      setIsDockVisible(true);
+    }
+  }, [status]);
 
   useEffect(() => {
     let frameId = 0;
@@ -369,6 +394,21 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     }
 
     try {
+      logElevenLabsDebug('[ElevenLabs][OUT][START_SESSION]', {
+        agentId,
+        tools: [
+          'CloseModal',
+          'OpenHRAgent',
+          'OpenMarketingAgent',
+          'OpenSalesAgent',
+          'OpenCollectionsAgent',
+          'OpenFinancialAgent',
+          'OpenEmailAgent',
+          'open-create-course',
+          'OpenCreateCourse',
+        ],
+      });
+
       await startSession({
         agentId,
         clientTools: {
@@ -395,6 +435,14 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           OpenEmailAgent: async () => {
             openAgentModal("6", "OpenEmailAgent");
           },
+          "open-create-course": async () => {
+            setIsDockVisible(true);
+            navigate('/courses?view=create');
+          },
+          OpenCreateCourse: async () => {
+            setIsDockVisible(true);
+            navigate('/courses?view=create');
+          },
         },
       } as any);
       return true;
@@ -402,15 +450,19 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       console.error('Failed to start conversation:', error);
       return false;
     }
-  }, [agentId, hasAgentId, isPermissionGranted, openAgentModal, startSession]);
+  }, [agentId, hasAgentId, isPermissionGranted, logElevenLabsDebug, navigate, openAgentModal, startSession]);
 
   const endConversation = useCallback(async () => {
+    logElevenLabsDebug('[ElevenLabs][OUT][END_SESSION]');
     await endSession();
-  }, [endSession]);
+    setIsDockVisible(false);
+  }, [endSession, logElevenLabsDebug]);
 
   const handleSendMessage = useCallback(async () => {
     const text = messageInput.trim();
     if (!text || !hasAgentId) return;
+
+    logElevenLabsDebug('[ElevenLabs][OUT][USER_MESSAGE]', { text });
 
     appendMessage('user', text);
     setMessageInput('');
@@ -429,7 +481,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       console.error('No se pudo enviar el mensaje del usuario:', error);
       appendMessage('agent', 'No pude recibir tu mensaje. Inténtalo de nuevo.');
     }
-  }, [appendMessage, hasAgentId, messageInput, sendUserMessage, startConversation, status]);
+  }, [appendMessage, hasAgentId, logElevenLabsDebug, messageInput, sendUserMessage, startConversation, status]);
 
   const handleToggleCall = () => {
     if (status === 'disconnected') {
@@ -439,89 +491,121 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <>
-      <div className="h-full min-h-[calc(100vh-8rem)] w-full p-4">
-        <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[460px_1fr]">
-          <aside className="bg-white p-6 flex flex-col items-center justify-center gap-6">
-            {!hasAgentId && (
-              <div className="w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive">
-                Falta <strong>VITE_ELEVENLABS_AGENT_ID</strong> en tu .env. Agrégalo y reinicia el servidor de desarrollo.
-              </div>
-            )}
-
-            {status === 'connecting' ? (
-              <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
-            ) : (
-              <div className="relative flex w-full justify-center overflow-visible">
-                <SofiaAvatar3D
-                  mouthOpen={mouthOpen}
-                  isSpeaking={status === 'connected' && isSpeaking}
-                  isHappy={isAvatarHappy}
-                  showHappyEmoticon={showHappyEmoticon}
-                />
-              </div>
-            )}
-
-            <button
-              onClick={handleToggleCall}
-              disabled={status === 'connecting' || !hasAgentId}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {status === 'connected' ? 'Finalizar chat de voz' : 'Iniciar chat de voz'}
-            </button>
-          </aside>
-
-          <section className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm">
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h3 className="text-sm font-semibold text-foreground">Conversación</h3>
-              <span className="text-xs text-muted-foreground capitalize">{status}</span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-              {chatMessages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Empieza a hablar o envía un mensaje para comenzar.</p>
-              ) : (
-                chatMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                      message.role === 'user'
-                        ? 'ml-auto bg-primary text-primary-foreground'
-                        : 'mr-auto bg-muted text-foreground'
-                    }`}
-                  >
-                    {message.text}
-                  </div>
-                ))
+      {isFullView && (
+        <div className="fixed left-0 right-0 top-16 bottom-0 z-40 p-4 md:left-64 md:top-20">
+          <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[460px_1fr]">
+            <aside className="bg-white p-6 flex flex-col items-center justify-center gap-6">
+              {!hasAgentId && (
+                <div className="w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive">
+                  Falta <strong>VITE_ELEVENLABS_AGENT_ID</strong> en tu .env. Agrégalo y reinicia el servidor de desarrollo.
+                </div>
               )}
-              <div ref={chatEndRef} />
-            </div>
 
-            <div className="flex items-center gap-2 border-t border-border p-3">
-              <input
-                value={messageInput}
-                onChange={(event) => setMessageInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    void handleSendMessage();
-                  }
-                }}
-                placeholder="Escribe un mensaje..."
-                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-              />
+              {status === 'connecting' ? (
+                <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
+              ) : (
+                <div className="relative flex w-full justify-center overflow-visible">
+                  <SofiaAvatar3D
+                    mouthOpen={mouthOpen}
+                    isSpeaking={status === 'connected' && isSpeaking}
+                    isHappy={isAvatarHappy}
+                    showHappyEmoticon={showHappyEmoticon}
+                  />
+                </div>
+              )}
+
               <button
-                onClick={() => void handleSendMessage()}
-                disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
-                className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleToggleCall}
+                disabled={status === 'connecting' || !hasAgentId}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Enviar
+                {status === 'connected' ? 'Finalizar chat de voz' : 'Iniciar chat de voz'}
               </button>
-            </div>
-          </section>
+            </aside>
+
+            <section className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <h3 className="text-sm font-semibold text-foreground">Conversación</h3>
+                <span className="text-xs text-muted-foreground capitalize">{status}</span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                {chatMessages.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Empieza a hablar o envía un mensaje para comenzar.</p>
+                ) : (
+                  chatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                        message.role === 'user'
+                          ? 'ml-auto bg-primary text-primary-foreground'
+                          : 'mr-auto bg-muted text-foreground'
+                      }`}
+                    >
+                      {message.text}
+                    </div>
+                  ))
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="flex items-center gap-2 border-t border-border p-3">
+                <input
+                  value={messageInput}
+                  onChange={(event) => setMessageInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      void handleSendMessage();
+                    }
+                  }}
+                  placeholder="Escribe un mensaje..."
+                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                />
+                <button
+                  onClick={() => void handleSendMessage()}
+                  disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
+                  className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Enviar
+                </button>
+              </div>
+            </section>
+          </div>
         </div>
-      </div>
+      )}
+
+      {!isFullView && isDockVisible && status !== 'disconnected' && (
+        <div className="fixed bottom-4 right-4 z-50 w-[220px] rounded-xl border border-border bg-card shadow-lg p-3 space-y-3">
+          <div className="text-xs font-medium text-foreground">Sofia en llamada</div>
+
+          {status === 'connecting' ? (
+            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-primary" />
+          ) : (
+            <div className="mx-auto w-full max-w-[180px]">
+              <SofiaAvatar3D
+                mouthOpen={mouthOpen}
+                isSpeaking={status === 'connected' && isSpeaking}
+                isHappy={isAvatarHappy}
+                showHappyEmoticon={showHappyEmoticon}
+              />
+            </div>
+          )}
+
+          <button
+            onClick={() => void endConversation()}
+            className="w-full rounded-md bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground"
+          >
+            Colgar
+          </button>
+        </div>
+      )}
 
       <AgentExploreModal
         agent={selectedAgent}

@@ -1,4 +1,6 @@
 import { FormEvent, useState } from "react"
+import { useEffect, useRef } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
 import { Input } from "@/shared/components/ui/Input"
@@ -197,8 +199,16 @@ const initialFormState: CourseFormState = {
 }
 
 export default function CoursesManagementView() {
+  const [searchParams] = useSearchParams()
+  const createSectionRef = useRef<HTMLDivElement | null>(null)
   const [formData, setFormData] = useState<CourseFormState>(initialFormState)
   const [submitMessage, setSubmitMessage] = useState("")
+
+  useEffect(() => {
+    if (searchParams.get("view") === "create") {
+      createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }, [searchParams])
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -213,7 +223,7 @@ export default function CoursesManagementView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_1fr]">
-        <Card>
+        <Card ref={createSectionRef}>
           <CardHeader>
             <CardTitle>Cursos disponibles (mock)</CardTitle>
             <CardDescription>{MOCK_COURSES.length} cursos con información completa para pruebas visuales.</CardDescription>

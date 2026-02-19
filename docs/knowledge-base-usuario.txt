@@ -1,0 +1,180 @@
+# Knowledge Base de Usuario — Plataforma de Aprendizaje
+
+## 1) ¿Qué es esta plataforma?
+La plataforma es un espacio para gestionar formación interna: consultar cursos, revisar calendarios de aprendizaje, seguir avance del equipo y conversar con el asistente virtual Sofia.
+
+Está pensada para tres perfiles de usuario:
+- **Talent** (colaborador/consultor)
+- **Leader** (líder de equipo)
+- **HR** (recursos humanos)
+
+---
+
+## 2) Flujo general de uso (usuario final)
+1. Iniciar sesión.
+2. Entrar al menú principal según tu perfil.
+3. Consultar información de cursos, calendario o equipo.
+4. Usar a **Sofia** para resolver dudas o guiar acciones dentro de la plataforma.
+
+---
+
+## 3) Inicio de sesión
+En la pantalla de acceso:
+- Puedes usar el botón **“Iniciar sesión con Microsoft”**.
+- Según tu perfil, el sistema te lleva automáticamente a tu vista principal:
+  - Talent → **Gestión de cursos**
+  - Leader → **Resumen del equipo**
+  - HR → **Resumen del equipo (HR)**
+
+---
+
+## 4) Estructura funcional de la plataforma (vista de usuario)
+
+## 4.1 Menú principal (puede variar por rol)
+### Talent
+- **Gestión de cursos**
+- **Calendario de formación**
+- **Vista de profe**
+- **Calendario de profe**
+- Enlaces rápidos: **Habla con Sofia**, **Chat**
+
+### Leader
+- **Gestión de cursos**
+- **Resumen del equipo**
+- **Calendario**
+- Enlaces rápidos: **Chat**
+
+### HR
+- **Gestión de cursos**
+- **Resumen del equipo**
+- **Vista de líder**
+- **Calendario**
+- **Calendario de líder**
+- Enlaces rápidos: **Configuración del sistema**, **Ayuda y soporte**, **Chat**
+
+---
+
+## 4.2 Encabezado de la aplicación
+En la parte superior se muestra:
+- Título de la sección actual.
+- Selector de tema (claro/oscuro).
+- Información del usuario (nombre, cargo, región).
+
+---
+
+## 5) Módulos y pantallas principales
+
+## 5.1 Gestión de cursos
+Esta vista combina dos bloques:
+
+### A) Listado de cursos
+Muestra cursos con información completa, por ejemplo:
+- título
+- código
+- categoría
+- nivel
+- modalidad
+- idioma
+- instructor
+- duración
+- fechas
+- cupos
+- precio
+- estado
+- módulos
+- etiquetas
+- prerrequisitos
+
+### B) Crear curso
+Incluye formulario con campos como:
+- título, código, categoría
+- nivel, modalidad, idioma
+- instructor
+- duración, cupo
+- fechas de inicio y cierre
+- precio
+- etiquetas
+- descripción y prerrequisitos
+
+**Comportamiento actual:** el formulario permite capturar y enviar información, y muestra confirmación visual de envío.
+
+---
+
+## 5.2 Calendario de formación
+Permite:
+- Navegar entre meses.
+- Volver al día de hoy.
+- Actualizar datos.
+- Ver resumen por categorías y total de tracks.
+- Revisar estado de avance diario.
+
+---
+
+## 5.3 Recursos de formación
+Incluye catálogo de materiales de aprendizaje con:
+- documentos y descargas
+- enlaces externos
+- etiquetas
+- categorías
+- filtros y búsqueda
+
+---
+
+## 5.4 Resumen del equipo (Leader/HR)
+Permite:
+- Ver métricas generales (miembros, progreso promedio, riesgo, alto desempeño).
+- Filtrar miembros por rol, región, cargo y estado.
+- Buscar por nombre.
+- Revisar tarjetas de miembros y su avance.
+- Generar reporte general del equipo (con notificación de resultado).
+
+---
+
+## 5.5 Secciones en desarrollo
+Algunas rutas muestran pantalla de **“En desarrollo”** con mensaje informativo y opción de volver.
+
+---
+
+## 6) Sofia (asistente conversacional)
+
+## 6.1 ¿Qué puede hacer Sofia?
+- Mantener conversación de voz y texto con el usuario.
+- Mostrar avatar con animación de habla.
+- Reaccionar con expresión/emoticono de felicidad cuando el mensaje del agente incluye estado feliz.
+- Ejecutar acciones guiadas, por ejemplo abrir vistas específicas.
+
+## 6.2 Continuidad de conversación entre vistas
+- Si la llamada está activa y sales de la pantalla principal del chat, Sofia permanece visible en un **widget flotante** (esquina inferior derecha).
+- Desde ese widget puedes **colgar** la llamada.
+- En la ruta de chat completa, Sofia se muestra en formato expandido.
+
+## 6.3 Acción de creación de curso
+Cuando Sofia activa la intención de **abrir creación de curso**, el usuario es dirigido a la vista de **Gestión de cursos** enfocada en el bloque de creación.
+
+---
+
+## 7) Qué información puede responder bien un agente con esta KB
+Con esta base, el agente debería responder correctamente preguntas como:
+- “¿Dónde veo los cursos?”
+- “¿Cómo creo un curso?”
+- “¿Qué ve un usuario HR en el menú?”
+- “¿Qué hace Sofia cuando estoy en otra pantalla?”
+- “¿Dónde encuentro el calendario de formación?”
+- “¿Qué incluye el resumen de equipo?”
+
+---
+
+## 8) Límites de esta KB
+Esta base está enfocada en **experiencia de usuario** y no en aspectos técnicos.
+No incluye:
+- implementación interna
+- código
+- detalles de arquitectura o APIs
+
+---
+
+## 9) Resumen corto (para respuestas rápidas del agente)
+- La plataforma gestiona aprendizaje para perfiles Talent, Leader y HR.
+- El eje principal es **Gestión de cursos**, **Calendario**, **Resumen de equipo** y **Sofia**.
+- Sofia puede acompañar al usuario entre vistas con un widget flotante y puede llevar al formulario de creación de curso.
+- Algunas secciones siguen en desarrollo y muestran una pantalla informativa.

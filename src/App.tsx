@@ -9,6 +9,7 @@ import { store } from "./shared/store/store";
 import { AuthProvider } from "./shared/hooks/use-auth";
 import { ThemeProvider } from "next-themes";
 import AppRoutes from "./core/routes/AppRoutes";
+import VoiceChat from "./modules/consultant/pages/chatbot";
 
 export const App = () => (
   <Provider store={store}>
@@ -24,6 +25,7 @@ export const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
+            <VoiceChat agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID || ""} />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
