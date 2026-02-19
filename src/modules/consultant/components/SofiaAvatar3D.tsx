@@ -52,6 +52,7 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
   const headLocalCameraRef = useRef(new THREE.Vector3());
 
   const smoothMouthRef = useRef(0);
+  const mouthPhaseRef = useRef(Math.random() * Math.PI * 2);
 
   const { scene, mouthMorphs, roundMouthMorphs } = useMemo(() => {
     const modelScene = gltf.scene;
@@ -103,12 +104,31 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
     };
   }, [gltf.scene]);
 
-  useFrame(({ clock, camera }) => {
+  useFrame(({ clock, camera }, delta) => {
     const time = clock.elapsedTime;
 
-    const targetMouth = Math.min(1, Math.max(0, mouthOpen)) * (isSpeaking ? 1 : 0.7);
-    const mouthResponse = targetMouth > smoothMouthRef.current ? 0.62 : 0.3;
+    const targetMouth = Math.min(1, Math.max(0, mouthOpen)) * (isSpeaking ? 1 : 0.58);
+    const attack = 1 - Math.exp(-delta * 16);
+    const release = 1 - Math.exp(-delta * 9.5);
+    const mouthResponse = targetMouth > smoothMouthRef.current ? attack : release;
     smoothMouthRef.current = THREE.MathUtils.lerp(smoothMouthRef.current, targetMouth, mouthResponse);
+
+    let animatedMouth = smoothMouthRef.current;
+    if (isSpeaking && smoothMouthRef.current > 0.04) {
+      const syllableRate = THREE.MathUtils.lerp(6.4, 10.8, smoothMouthRef.current);
+      mouthPhaseRef.current += delta * syllableRate * Math.PI * 2;
+
+      const primaryFlap = 0.5 + 0.5 * Math.sin(mouthPhaseRef.current);
+      const secondaryFlap = 0.5 + 0.5 * Math.sin(mouthPhaseRef.current * 2.15 + 0.9);
+      const flapShape = 0.28 + primaryFlap * 0.44 + secondaryFlap * 0.22;
+      const consonantPulse = 0.5 + 0.5 * Math.sin(mouthPhaseRef.current * 3.8 + 1.7);
+      const closeGate = 0.2 + 0.8 * Math.pow(consonantPulse, 1.8);
+      const openBoost = 1 + 0.24 * smoothMouthRef.current;
+
+      animatedMouth = smoothMouthRef.current * flapShape * closeGate * openBoost;
+    }
+
+    animatedMouth = THREE.MathUtils.clamp(animatedMouth, 0, 1);
 
     if (groupRef.current) {
       const breathingDepth = isSpeaking ? 0.012 : 0.009;
@@ -124,8 +144,8 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
     }
 
     if (jawRef.current) {
-      const desiredJawRotation = -0.03 - smoothMouthRef.current * 0.62;
-      jawRef.current.rotation.x = THREE.MathUtils.lerp(jawRef.current.rotation.x, desiredJawRotation, 0.52);
+      const desiredJawRotation = -0.03 - animatedMouth * 0.76;
+      jawRef.current.rotation.x = THREE.MathUtils.lerp(jawRef.current.rotation.x, desiredJawRotation, 0.46);
     }
 
     if (headRef.current) {
@@ -162,21 +182,21 @@ const AvatarModel: React.FC<AvatarModelProps> = ({ mouthOpen, isSpeaking }) => {
 
     mouthMorphs.forEach(({ mesh, index, weight }) => {
       const current = mesh.morphTargetInfluences?.[index] ?? 0;
-      const desired = smoothMouthRef.current * weight;
+      const desired = animatedMouth * weight * 1.14;
       if (mesh.morphTargetInfluences) {
-        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(current, desired, 0.5);
+        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(current, desired, 0.44);
       }
     });
 
     const roundShapeTarget = isSpeaking
-      ? THREE.MathUtils.smoothstep(smoothMouthRef.current, 0.16, 0.78) * 1.1
+      ? THREE.MathUtils.smoothstep(animatedMouth, 0.16, 0.78) * 1.1
       : 0;
 
     roundMouthMorphs.forEach(({ mesh, index, weight }) => {
       const current = mesh.morphTargetInfluences?.[index] ?? 0;
-      const desired = roundShapeTarget * weight;
+      const desired = roundShapeTarget * weight * 1.1;
       if (mesh.morphTargetInfluences) {
-        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(current, desired, 0.56);
+        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(current, desired, 0.45);
       }
     });
 
