@@ -51,7 +51,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="mb-10">
             <h1 className="text-4xl font-bold text-balance">
-              Ofi <span className="text-primary">Academy</span>
+              <span className="text-primary">Academy</span>
             </h1>
             <p className="text-muted-foreground mt-2 text-base">
               Impulsa tu aprendizaje al siguiente nivel
