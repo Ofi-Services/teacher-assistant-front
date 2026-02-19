@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useConversation } from '@elevenlabs/react';
-import sofiaHeadImage from '@/assets/react.svg';
-import sofiaSpeakingGif from '@/assets/react.svg';
 import AgentExploreModal from '@/components/modal/agent-explore-modal';
 import { agents_explore } from '@/data/agents-explore';
 import type { AgentExplore } from '@/types/types';
@@ -17,6 +15,9 @@ interface ChatMessage {
 }
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
+  const sofiaHeadImage = '/sofiaHead.png';
+  const sofiaSpeakingGif = '/Sofiahablando.gif';
+
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentExplore | null>(null);
@@ -343,131 +344,98 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     }
   };
 
-  const getButtonColor = () => {
-    switch (status) {
-      case 'connected':
-        return 'bg-transparent hover:bg-transparent';
-      case 'connecting':
-        return 'bg-yellow-600 hover:bg-yellow-700';
-      default:
-        return 'bg-transparent hover:bg-transparent';
-    }
-  };
-
   const getButtonIcon = () => {
     const activeSpeaking = status === 'connected' && isSpeaking;
-    const containerSize = activeSpeaking ? 'h-32 w-32' : 'h-28 w-28';
-    
-
     const imageSrc = activeSpeaking ? sofiaSpeakingGif : sofiaHeadImage;
     
     return (
-      <div className={`relative ${containerSize} transition-all duration-500 overflow-hidden`}>
+      <div className="relative flex w-full justify-center overflow-visible">
         <img 
           src={imageSrc}
           alt="Sofia AI Assistant" 
-          className={`w-full h-full object-cover transition-all duration-500`}
+          className={`h-auto w-full max-w-[520px] object-contain transition-all duration-500 ${
+            activeSpeaking ? 'scale-105' : 'scale-100'
+          }`}
         />
       </div>
     );
   };
 
-  const getButtonText = () => {
-    if (!hasAgentId) {
-      return 'Missing ElevenLabs Agent ID';
-    }
-
-    switch (status) {
-      case 'connected':
-        return 'End Call';
-      case 'connecting':
-        return 'Connecting...';
-      default:
-        return 'Start Voice Chat';
-    }
-  };
-
   return (
     <>
-      {!hasAgentId && (
-        <div className="fixed bottom-40 right-4 z-50 max-w-xs rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive shadow-lg">
-          Missing <strong>VITE_ELEVENLABS_AGENT_ID</strong> in your .env. Add it and restart the dev server.
-        </div>
-      )}
-
-      <div className="fixed bottom-4 right-4 z-50">
-        <div className="mb-3 w-[360px] rounded-xl border border-border bg-card shadow-xl">
-          <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <h3 className="text-sm font-semibold text-foreground">Sofia Voice + Chat</h3>
-            <span className="text-xs text-muted-foreground capitalize">{status}</span>
-          </div>
-
-          <div className="h-72 overflow-y-auto px-3 py-2 space-y-2">
-            {chatMessages.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Start speaking or send a text message to begin.</p>
-            ) : (
-              chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                    message.role === 'user'
-                      ? 'ml-auto bg-primary text-primary-foreground'
-                      : 'mr-auto bg-muted text-foreground'
-                  }`}
-                >
-                  {message.text}
-                </div>
-              ))
+      <div className="h-full min-h-[calc(100vh-8rem)] w-full p-4">
+        <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[460px_1fr]">
+          <aside className="bg-white p-6 flex flex-col items-center justify-center gap-6">
+            {!hasAgentId && (
+              <div className="w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive">
+                Missing <strong>VITE_ELEVENLABS_AGENT_ID</strong> in your .env. Add it and restart the dev server.
+              </div>
             )}
-            <div ref={chatEndRef} />
-          </div>
 
-          <div className="flex items-center gap-2 border-t border-border p-3">
-            <input
-              value={messageInput}
-              onChange={(event) => setMessageInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  void handleSendMessage();
-                }
-              }}
-              placeholder="Type a message..."
-              className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-            />
+            {status === 'connecting' ? (
+              <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
+            ) : (
+              getButtonIcon()
+            )}
+
             <button
-              onClick={() => void handleSendMessage()}
-              disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
-              className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleToggleCall}
+              disabled={status === 'connecting' || !hasAgentId}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send
+              {status === 'connected' ? 'End Voice Chat' : 'Start Voice Chat'}
             </button>
-          </div>
+          </aside>
+
+          <section className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h3 className="text-sm font-semibold text-foreground">Chat</h3>
+              <span className="text-xs text-muted-foreground capitalize">{status}</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+              {chatMessages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Start speaking or send a text message to begin.</p>
+              ) : (
+                chatMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      message.role === 'user'
+                        ? 'ml-auto bg-primary text-primary-foreground'
+                        : 'mr-auto bg-muted text-foreground'
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            <div className="flex items-center gap-2 border-t border-border p-3">
+              <input
+                value={messageInput}
+                onChange={(event) => setMessageInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    void handleSendMessage();
+                  }
+                }}
+                placeholder="Type a message..."
+                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+              />
+              <button
+                onClick={() => void handleSendMessage()}
+                disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
+                className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+          </section>
         </div>
-
-        <button
-          onClick={handleToggleCall}
-          disabled={status === 'connecting' || !hasAgentId}
-          className={`${getButtonColor()} text-white p-0 rounded-full shadow-lg transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed group relative hover:drop-shadow-2xl`}
-          aria-label={getButtonText()}
-          title={getButtonText()}
-        >
-          {status === 'connecting' ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-          ) : (
-            getButtonIcon()
-          )}
-          
-
-          {status === 'connected' && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
-          )}
-          
-
-          <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 px-2 py-1 text-sm bg-black text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            {getButtonText()}
-          </span>
-        </button>
       </div>
 
       <AgentExploreModal
