@@ -1,13 +1,7 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import Login from "@/modules/auth/pages/Index"
 import NotFound from "@/shared/components/common/NotFound"
-
-// Import modular routes
-import { consultantRoutes } from "@/modules/consultant/routes/consultant.routes"
-import { leaderRoutes } from "@/modules/leader/routes/leader.routes"
-//import { superuserRoutes } from "@/modules/superuser/routes/superuser.routes"
-import { sharedRoutes } from "@/shared/routes/shared.routes"
-import { hrRoutes } from "@/modules/hr/routes/hr.routes"
+import { teacherAssistantRoutes } from "@/modules/teacher-assistant/routes/teacherAssistant.routes"
 
 /**
  * Main Application Routes
@@ -23,19 +17,9 @@ export default function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Consultant module routes */}
-      {consultantRoutes}
-
-      {/* Leader module routes */}
-      {leaderRoutes}
-
-      {/* Superuser module routes */}
-      {hrRoutes}
-
-      {/* Shared routes (all authenticated users) */}
-      {sharedRoutes}
+      {teacherAssistantRoutes}
 
       {/* Catch all - 404 */}
       <Route path="*" element={<NotFound />} />

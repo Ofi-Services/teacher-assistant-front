@@ -4,39 +4,25 @@ import { useAuth } from "@/shared/hooks/use-auth"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
-import { AlertCircle, Shield } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
-
-  // Show traditional login form only in development mode
-  const isDevelopment = import.meta.env.MODE === 'development'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
-    const success = await login(email, password)
+    const success = await login(username, password)
     if (!success) {
       setError("Credenciales incorrectas. Inténtalo de nuevo.")
-      setIsLoading(false)
     }
-  }
-
-  const handleSamlLogin = () => {
-    setError("")
-    setIsLoading(true)
-    void login(email || "talent@ofi.mock", password || "mock-password").then((success) => {
-      if (!success) {
-        setError("No se pudo iniciar sesión con el flujo simulado de Microsoft.")
-        setIsLoading(false)
-      }
-    })
+    setIsLoading(false)
   }
 
   return (
@@ -54,86 +40,59 @@ export default function LoginPage() {
               <span className="text-primary">Academy</span>
             </h1>
             <p className="text-muted-foreground mt-2 text-base">
-              Impulsa tu aprendizaje al siguiente nivel
+              Plataforma Director/Teacher conectada al backend Django
             </p>
           </div>
 
-          {/* Traditional Login Form - Only visible in development */}
-          {isDevelopment && (
-            <>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-base text-foreground">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-12 border-border text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-base text-foreground">
+                Username
+              </Label>
+              <Input
+                id="username"
+                placeholder="director1"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-base text-foreground">
-                    Contraseña
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="h-12 border-border text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-base text-foreground">
+                Contraseña
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
 
-                {error && (
-                  <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
-                    <p className="text-sm text-destructive">{error}</p>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
-                >
-                  {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
-                </Button>
-              </form>
-
-              {/* SAML Login Divider - Only shown when traditional login is visible */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">O continúa con</span>
-                </div>
+            {error && (
+              <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                <p className="text-sm text-destructive">{error}</p>
               </div>
-            </>
-          )}
+            )}
 
-          {/* SAML Login Button - Always visible */}
-          <Button
-            type="button"
-            onClick={handleSamlLogin}
-            variant={isDevelopment ? "outline" : "default"}
-            className={`w-full h-12 font-semibold text-base transition-colors ${
-              isDevelopment
-                ? "border-border hover:bg-accent"
-                : "bg-primary hover:bg-primary/90 text-primary-foreground"
-            }`}
-          >
-            <Shield className="mr-2 h-5 w-5" />
-            Iniciar sesión con Microsoft
-          </Button>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
+            >
+              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+            </Button>
+          </form>
+
+          <p className="text-xs text-muted-foreground mt-4">
+            Seeds: director1 / Pass1234! · teacher1 / Pass1234! · teacher2 / Pass1234!
+          </p>
         </div>
       </div>
 
@@ -157,12 +116,12 @@ export default function LoginPage() {
               <p className="text-sm text-primary-foreground/80">Cursos</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
-              <p className="text-3xl font-bold text-primary-foreground">200+</p>
-              <p className="text-sm text-primary-foreground/80">Consultores</p>
+              <p className="text-3xl font-bold text-primary-foreground">2</p>
+              <p className="text-sm text-primary-foreground/80">Roles</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
-              <p className="text-3xl font-bold text-primary-foreground">95%</p>
-              <p className="text-sm text-primary-foreground/80">Satisfacción</p>
+              <p className="text-3xl font-bold text-primary-foreground">100%</p>
+              <p className="text-sm text-primary-foreground/80">Plataforma activa</p>
             </div>
           </div>
         </div>

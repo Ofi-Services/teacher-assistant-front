@@ -2,7 +2,7 @@
 import { ReactNode } from "react"
 import { useAuth } from "@/shared/hooks/use-auth"
 import DashboardLayout from "./DashboardLayout"
-import { CONSULTANT_NAV, LEADER_NAV, HR_NAV } from "@/shared/config/navigation.config"
+import { DIRECTOR_NAV, TEACHER_NAV } from "@/shared/config/navigation.config"
 
 interface AuthenticatedLayoutProps {
   children: ReactNode
@@ -18,17 +18,14 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
   // Selecciona el navigation según el rol del usuario
   let navigation
   switch (user.role) {
-    case "Talent":
-      navigation = CONSULTANT_NAV
+    case "director":
+      navigation = DIRECTOR_NAV
       break
-    case "Leader":
-      navigation = LEADER_NAV
-      break
-    case "HR":
-      navigation = HR_NAV
+    case "teacher":
+      navigation = TEACHER_NAV
       break
     default:
-      navigation = CONSULTANT_NAV
+      navigation = TEACHER_NAV
   }
 
   return (
