@@ -9,7 +9,6 @@ import AssignmentDetailView from "@/modules/teacher-assistant/pages/AssignmentDe
 import AlertsRecommendationsView from "@/modules/teacher-assistant/pages/AlertsRecommendationsView"
 import TeacherPlanListView from "@/modules/teacher-assistant/pages/TeacherPlanListView"
 import CoursesManagementView from "@/shared/components/common/CoursesManagementView"
-import VoiceChat from "@/modules/consultant/pages/chatbot"
 
 export const teacherAssistantRoutes = (
   <>
@@ -90,7 +89,7 @@ export const teacherAssistantRoutes = (
       path="/chatbot"
       element={
         <RoleRoute allowedRoles={["director", "teacher"]}>
-          <VoiceChat agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID || ""} />
+          <div />
         </RoleRoute>
       }
     />

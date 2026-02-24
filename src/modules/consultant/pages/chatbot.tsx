@@ -445,6 +445,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           'OpenCreateCourse',
           'open-dashboard',
           'open-mis-planes',
+          'open-asignaciones',
           'crear-plan',
         ],
       });
@@ -490,6 +491,10 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           "open-mis-planes": async () => {
             setIsDockVisible(true);
             navigate(user?.role === 'director' ? '/director/plans' : '/teacher/plans');
+          },
+          "open-asignaciones": async () => {
+            setIsDockVisible(true);
+            navigate('/director/assignments');
           },
           "crear-plan": async () => {
             setIsDockVisible(true);
@@ -681,6 +686,19 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
             Colgar
           </button>
         </div>
+      )}
+
+      {!isFullView && status === 'disconnected' && (
+        <button
+          onClick={() => {
+            setIsDockVisible(true);
+            void startConversation();
+          }}
+          disabled={!hasAgentId}
+          className="fixed bottom-4 right-4 z-50 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Llamar a Anita
+        </button>
       )}
 
       <AgentExploreModal
