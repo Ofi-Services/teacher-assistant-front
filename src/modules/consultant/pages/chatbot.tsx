@@ -443,6 +443,9 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           'OpenEmailAgent',
           'open-create-course',
           'OpenCreateCourse',
+          'open-dashboard',
+          'open-mis-planes',
+          'crear-plan',
         ],
       });
 
@@ -480,6 +483,18 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
             setIsDockVisible(true);
             navigate('/courses?view=create');
           },
+          "open-dashboard": async () => {
+            setIsDockVisible(true);
+            navigate(user?.role === 'director' ? '/director/dashboard' : '/teacher/dashboard');
+          },
+          "open-mis-planes": async () => {
+            setIsDockVisible(true);
+            navigate(user?.role === 'director' ? '/director/plans' : '/teacher/plans');
+          },
+          "crear-plan": async () => {
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+          },
           "fill-course-creation-form": async (payload: Record<string, unknown>) => {
             logElevenLabsDebug('[ElevenLabs][TOOL][fill-course-creation-form]', payload);
 
@@ -509,7 +524,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       console.error('Failed to start conversation:', error);
       return false;
     }
-  }, [agentId, hasAgentId, isPermissionGranted, logElevenLabsDebug, navigate, openAgentModal, startSession]);
+  }, [agentId, hasAgentId, isPermissionGranted, logElevenLabsDebug, navigate, openAgentModal, startSession, user?.role]);
 
   const endConversation = useCallback(async () => {
     logElevenLabsDebug('[ElevenLabs][OUT][END_SESSION]');
