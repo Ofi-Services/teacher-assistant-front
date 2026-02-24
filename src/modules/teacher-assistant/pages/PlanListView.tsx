@@ -48,7 +48,7 @@ export default function PlanListView() {
           <CardTitle>Buscar planes</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="search" />
+          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar" />
           <Button onClick={() => void loadPlans()}>Buscar</Button>
         </CardContent>
       </Card>

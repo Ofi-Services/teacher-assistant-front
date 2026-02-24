@@ -16,7 +16,7 @@ export default function DirectorDashboardView() {
       const data = await teacherAssistantApi.directorDashboard()
       setDashboard(data)
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el dashboard")
+      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el panel")
     } finally {
       setLoading(false)
     }
@@ -29,7 +29,7 @@ export default function DirectorDashboardView() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Director Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Panel del director</h1>
         <Button onClick={() => void loadDashboard()} disabled={loading}>
           Recargar
         </Button>
@@ -42,7 +42,7 @@ export default function DirectorDashboardView() {
           <CardTitle>Seguimiento de progreso</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <p className="text-sm text-muted-foreground">Cargando dashboard...</p>}
+          {loading && <p className="text-sm text-muted-foreground">Cargando panel...</p>}
           {!loading && dashboard?.teachers.length === 0 && (
             <p className="text-sm text-muted-foreground">Sin docentes con asignaciones todavía.</p>
           )}

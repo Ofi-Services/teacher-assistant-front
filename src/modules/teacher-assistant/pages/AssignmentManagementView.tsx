@@ -18,6 +18,16 @@ export default function AssignmentManagementView() {
   const [error, setError] = useState("")
   const [insightsMessage, setInsightsMessage] = useState("")
 
+  const getStatusLabel = (statusValue: PlanAssignment["status"]) => {
+    if (statusValue === "assigned") {
+      return "Asignado"
+    }
+    if (statusValue === "in_progress") {
+      return "En progreso"
+    }
+    return "Completado"
+  }
+
   const [newAssignment, setNewAssignment] = useState({
     plan: "",
     teacher: "",
@@ -113,7 +123,7 @@ export default function AssignmentManagementView() {
         `Asignación ${assignmentId}: ${result.alerts_created.length} alertas y ${result.recommendations_created.length} recomendaciones generadas.`,
       )
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No se pudieron generar insights")
+      setError(requestError instanceof Error ? requestError.message : "No se pudieron generar análisis")
     }
   }
 
@@ -162,7 +172,7 @@ export default function AssignmentManagementView() {
               </select>
             </div>
             <div>
-              <Label htmlFor="assignment-date">Due date</Label>
+              <Label htmlFor="assignment-date">Fecha límite</Label>
               <Input
                 id="assignment-date"
                 type="date"
@@ -185,16 +195,16 @@ export default function AssignmentManagementView() {
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <Input value={search} placeholder="search" onChange={(event) => setSearch(event.target.value)} />
+          <Input value={search} placeholder="Buscar" onChange={(event) => setSearch(event.target.value)} />
           <select
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >
             <option value="">Todos los estados</option>
-            <option value="assigned">assigned</option>
-            <option value="in_progress">in_progress</option>
-            <option value="completed">completed</option>
+            <option value="assigned">Asignado</option>
+            <option value="in_progress">En progreso</option>
+            <option value="completed">Completado</option>
           </select>
           <Button onClick={() => void loadAssignments()} disabled={loading}>
             Aplicar filtros
@@ -210,9 +220,15 @@ export default function AssignmentManagementView() {
           <Card key={assignment.id}>
             <CardContent className="pt-6 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-medium">Asignación #{assignment.id}</p>
+                <p className="font-medium">
+                  {assignment.plan_title?.trim()
+                    || planOptions.find((plan) => plan.id === assignment.plan)?.name
+                    || `Asignación #${assignment.id}`}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Plan {assignment.plan} · Teacher {assignment.teacher} · {assignment.status}
+                  Plan {assignment.plan_title?.trim() || planOptions.find((plan) => plan.id === assignment.plan)?.name || assignment.plan}
+                  {" · "}
+                  Profesor {teacherOptions.find((teacher) => teacher.id === assignment.teacher)?.name || assignment.teacher} · {getStatusLabel(assignment.status)}
                 </p>
                 <p className="text-sm text-muted-foreground">Progreso {assignment.progress_percentage}%</p>
               </div>
@@ -220,7 +236,7 @@ export default function AssignmentManagementView() {
                 <Button variant="outline" asChild>
                   <Link to={`/teacher/assignments/${assignment.id}`}>Ver detalle</Link>
                 </Button>
-                <Button onClick={() => void generateInsights(assignment.id)}>Generar insights</Button>
+                <Button onClick={() => void generateInsights(assignment.id)}>Generar análisis</Button>
               </div>
             </CardContent>
           </Card>

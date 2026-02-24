@@ -13,6 +13,7 @@ export interface PlanModule {
   id?: number
   title: string
   description: string
+  link?: string
   order: number
   expected_days: number
 }
@@ -43,6 +44,7 @@ export interface ProgressRecord {
 export interface PlanAssignment {
   id: number
   plan: number
+  plan_title?: string
   teacher: number
   assigned_by: number
   status: AssignmentStatus

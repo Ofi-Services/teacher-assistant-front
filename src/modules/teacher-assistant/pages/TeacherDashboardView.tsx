@@ -9,6 +9,16 @@ export default function TeacherDashboardView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
+  const getStatusLabel = (statusValue: "assigned" | "in_progress" | "completed") => {
+    if (statusValue === "assigned") {
+      return "Asignado"
+    }
+    if (statusValue === "in_progress") {
+      return "En progreso"
+    }
+    return "Completado"
+  }
+
   const loadDashboard = async () => {
     try {
       setLoading(true)
@@ -16,7 +26,7 @@ export default function TeacherDashboardView() {
       const data = await teacherAssistantApi.teacherDashboard()
       setDashboard(data)
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el dashboard")
+      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el panel")
     } finally {
       setLoading(false)
     }
@@ -29,7 +39,7 @@ export default function TeacherDashboardView() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Teacher Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Panel del docente</h1>
         <Button onClick={() => void loadDashboard()} disabled={loading}>
           Recargar
         </Button>
@@ -56,7 +66,7 @@ export default function TeacherDashboardView() {
                   <div key={plan.assignment_id} className="rounded-md border border-border p-3">
                     <p className="font-medium">{plan.plan_title}</p>
                     <p className="text-sm text-muted-foreground">
-                      Estado: {plan.status} · Progreso: {plan.progress_percentage}%
+                      Estado: {getStatusLabel(plan.status)} · Progreso: {plan.progress_percentage}%
                     </p>
                   </div>
                 ))}

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/Input"
-import { Label } from "@/shared/components/ui/label"
+import { Progress } from "@/shared/components/ui/progress"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
-import { PlanAssignment } from "@/modules/teacher-assistant/types"
+import { PlanAssignment, TrainingPlan } from "@/modules/teacher-assistant/types"
 import { useAuth } from "@/shared/hooks/use-auth"
+import { cn } from "@/shared/lib/utils"
 
 export default function AssignmentDetailView() {
   const { id } = useParams()
@@ -14,17 +14,21 @@ export default function AssignmentDetailView() {
   const { user } = useAuth()
 
   const [assignment, setAssignment] = useState<PlanAssignment | null>(null)
+  const [plan, setPlan] = useState<TrainingPlan | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [completingModuleId, setCompletingModuleId] = useState<number | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  const [form, setForm] = useState({
-    module: "",
-    percent_completed: "0",
-    notes: "",
-    evidence_url: "",
-  })
+  const getAssignmentStatusLabel = (statusValue: PlanAssignment["status"]) => {
+    if (statusValue === "assigned") {
+      return "Asignado"
+    }
+    if (statusValue === "in_progress") {
+      return "En progreso"
+    }
+    return "Completado"
+  }
 
   const loadAssignment = async () => {
     try {
@@ -36,6 +40,14 @@ export default function AssignmentDetailView() {
           : await teacherAssistantApi.listAssignments({ page: 1 })
       const selected = data.results.find((entry) => entry.id === assignmentId) ?? null
       setAssignment(selected)
+
+      if (selected) {
+        const plansResponse = await teacherAssistantApi.listPlans({ page: 1 })
+        const selectedPlan = plansResponse.results.find((entry) => entry.id === selected.plan) ?? null
+        setPlan(selectedPlan)
+      } else {
+        setPlan(null)
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudo cargar la asignación")
     } finally {
@@ -49,28 +61,49 @@ export default function AssignmentDetailView() {
     }
   }, [assignmentId, user?.role])
 
-  const updateProgress = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (assignmentId <= 0) {
+  const getModuleProgress = (moduleId?: number) => {
+    if (!moduleId || !assignment?.progress_records) {
+      return null
+    }
+
+    return assignment.progress_records
+      .filter((record) => record.module === moduleId)
+      .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())[0] ?? null
+  }
+
+  const getModuleStatus = (percent: number) => {
+    if (percent >= 100) {
+      return "Completado"
+    }
+    if (percent > 0) {
+      return "En progreso"
+    }
+    return "Pendiente"
+  }
+
+  const completeModule = async (moduleId?: number) => {
+    if (!moduleId || assignmentId <= 0) {
       return
     }
 
+    const currentProgress = getModuleProgress(moduleId)
+
     try {
-      setSaving(true)
+      setCompletingModuleId(moduleId)
       setError("")
       setSuccess("")
       await teacherAssistantApi.updateProgress(assignmentId, {
-        module: Number(form.module),
-        percent_completed: Number(form.percent_completed),
-        notes: form.notes,
-        evidence_url: form.evidence_url,
+        module: moduleId,
+        percent_completed: 100,
+        notes: currentProgress?.notes || "Módulo completado",
+        evidence_url: currentProgress?.evidence_url || "https://example.com/completed",
       })
-      setSuccess("Progreso actualizado correctamente")
+      setSuccess("Módulo marcado como completado")
       await loadAssignment()
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No se pudo actualizar progreso")
+      setError(requestError instanceof Error ? requestError.message : "No se pudo completar el módulo")
     } finally {
-      setSaving(false)
+      setCompletingModuleId(null)
     }
   }
 
@@ -83,18 +116,23 @@ export default function AssignmentDetailView() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Estado actual</CardTitle>
+          <CardTitle>Resumen general</CardTitle>
         </CardHeader>
         <CardContent>
           {loading && <p className="text-sm text-muted-foreground">Cargando...</p>}
           {!loading && !assignment && <p className="text-sm text-muted-foreground">Asignación no encontrada en la página actual.</p>}
           {assignment && (
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>Plan ID: {assignment.plan}</p>
-              <p>Teacher ID: {assignment.teacher}</p>
-              <p>Estado: {assignment.status}</p>
-              <p>Progreso: {assignment.progress_percentage}%</p>
-              <p>Última actividad: {assignment.last_activity_at ?? "N/A"}</p>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">{plan?.title ?? `Plan #${assignment.plan}`}</p>
+              <p>Estado: {getAssignmentStatusLabel(assignment.status)}</p>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span>Progreso total</span>
+                  <span>{assignment.progress_percentage}%</span>
+                </div>
+                <Progress value={assignment.progress_percentage} />
+              </div>
+              <p>Última actividad: {assignment.last_activity_at ?? "Sin actividad"}</p>
             </div>
           )}
         </CardContent>
@@ -102,56 +140,98 @@ export default function AssignmentDetailView() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Actualizar progreso</CardTitle>
+          <CardTitle>Módulos del plan</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-3" onSubmit={updateProgress}>
-            <div>
-              <Label htmlFor="module">Module ID</Label>
-              <Input
-                id="module"
-                type="number"
-                value={form.module}
-                onChange={(event) => setForm((prev) => ({ ...prev, module: event.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="percent-completed">% completado</Label>
-              <Input
-                id="percent-completed"
-                type="number"
-                min={0}
-                max={100}
-                value={form.percent_completed}
-                onChange={(event) => setForm((prev) => ({ ...prev, percent_completed: event.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="notes">Notas</Label>
-              <textarea
-                id="notes"
-                className="w-full min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={form.notes}
-                onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="evidence">URL evidencia</Label>
-              <Input
-                id="evidence"
-                type="url"
-                value={form.evidence_url}
-                onChange={(event) => setForm((prev) => ({ ...prev, evidence_url: event.target.value }))}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={saving}>
-              {saving ? "Guardando..." : "Actualizar progreso"}
-            </Button>
-          </form>
+          {!loading && !plan && (
+            <p className="text-sm text-muted-foreground">No se pudieron cargar los módulos de este plan.</p>
+          )}
+
+          <div className="space-y-1">
+            {plan?.modules
+              .slice()
+              .sort((left, right) => left.order - right.order)
+              .map((module, index) => {
+                const moduleProgress = getModuleProgress(module.id)
+                const modulePercent = moduleProgress?.percent_completed ?? 0
+                const moduleStatus = getModuleStatus(modulePercent)
+                const isLast = index === (plan.modules.length - 1)
+                const isCompleted = modulePercent >= 100
+
+                return (
+                  <div key={`${module.title}-${module.order}-${index}`} className="relative pl-10 pb-4">
+                    {!isLast && <div className="absolute left-[15px] top-8 h-[calc(100%-20px)] w-px bg-border" />}
+
+                    <div className={cn(
+                      "absolute left-0 top-1 h-8 w-8 rounded-full border flex items-center justify-center text-xs font-semibold",
+                      isCompleted ? "border-primary bg-primary/20 text-primary" : "border-border bg-card",
+                    )}>
+                      {module.order}
+                    </div>
+
+                    <div className={cn(
+                      "rounded-md border p-4",
+                      isCompleted ? "border-primary/50 bg-primary/5" : "border-border",
+                    )}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Módulo {module.order}</p>
+                          <h3 className="font-medium">{module.title}</h3>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm text-muted-foreground">{module.expected_days} días</span>
+                          <p className={cn("text-xs mt-1", isCompleted ? "text-primary font-medium" : "text-muted-foreground")}>{moduleStatus}</p>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mt-2">{module.description}</p>
+
+                      {module.link && module.link.trim() !== "" && (
+                        <p className="text-sm mt-2">
+                          <a
+                            href={module.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary underline underline-offset-2 break-all"
+                          >
+                            Ver recurso del módulo
+                          </a>
+                        </p>
+                      )}
+
+                      <div className="mt-3">
+                        <div className="flex justify-between mb-1 text-sm text-muted-foreground">
+                          <span>Avance del módulo</span>
+                          <span>{modulePercent}%</span>
+                        </div>
+                        <Progress value={modulePercent} />
+                      </div>
+
+                      {moduleProgress?.notes && (
+                        <p className="text-sm mt-3">
+                          <span className="font-medium">Notas:</span> {moduleProgress.notes}
+                        </p>
+                      )}
+
+                      <div className="mt-3 flex justify-end">
+                        <Button
+                          type="button"
+                          variant={isCompleted ? "outline" : "default"}
+                          onClick={() => void completeModule(module.id)}
+                          disabled={isCompleted || completingModuleId === module.id}
+                        >
+                          {isCompleted
+                            ? "Completado"
+                            : completingModuleId === module.id
+                              ? "Completando..."
+                              : "Completar"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
@@ -19,6 +19,7 @@ export default function PlanCreateEditView() {
   const isEdit = Number.isFinite(editId) && editId > 0
 
   const [saving, setSaving] = useState(false)
+  const [loadingPlan, setLoadingPlan] = useState(false)
   const [error, setError] = useState("")
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -35,6 +36,44 @@ export default function PlanCreateEditView() {
   const updateModule = (index: number, patch: Partial<PlanFormModule>) => {
     setModules((prev) => prev.map((module, currentIndex) => (currentIndex === index ? { ...module, ...patch } : module)))
   }
+
+  useEffect(() => {
+    const loadPlanForEdit = async () => {
+      if (!isEdit) {
+        return
+      }
+
+      try {
+        setLoadingPlan(true)
+        setError("")
+        const plan = await teacherAssistantApi.getPlan(editId)
+
+        setTitle(plan.title)
+        setDescription(plan.description)
+        setObjectives(plan.objectives)
+        setDurationWeeks(plan.duration_weeks)
+        setModules(
+          plan.modules.length > 0
+            ? plan.modules
+                .slice()
+                .sort((left, right) => left.order - right.order)
+                .map((module) => ({
+                  title: module.title,
+                  description: module.description,
+                  order: module.order,
+                  expected_days: module.expected_days,
+                }))
+            : [{ title: "", description: "", order: 1, expected_days: 7 }],
+        )
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el plan para edición")
+      } finally {
+        setLoadingPlan(false)
+      }
+    }
+
+    void loadPlanForEdit()
+  }, [editId, isEdit])
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -70,6 +109,7 @@ export default function PlanCreateEditView() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{isEdit ? "Editar plan" : "Crear plan"}</h1>
       {error && <p className="text-sm text-destructive">{error}</p>}
+      {loadingPlan && <p className="text-sm text-muted-foreground">Cargando plan para edición...</p>}
 
       <Card>
         <CardHeader>

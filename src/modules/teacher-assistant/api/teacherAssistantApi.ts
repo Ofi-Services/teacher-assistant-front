@@ -138,6 +138,9 @@ export const teacherAssistantApi = {
 
   getProfile: () => request<User>("/api/accounts/profile/me/", "GET"),
 
+  getPlan: (planId: number) =>
+    request<TrainingPlan>(`/api/training/plans/${planId}/`, "GET"),
+
   listPlans: (query?: { search?: string; ordering?: string; created_by?: number; page?: number }) =>
     request<PaginatedResponse<TrainingPlan>>("/api/training/plans/", "GET", { query }),
 

@@ -13,6 +13,16 @@ export default function AlertsRecommendationsView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
+  const getSeverityLabel = (severityValue: "low" | "medium" | "high") => {
+    if (severityValue === "low") {
+      return "Baja"
+    }
+    if (severityValue === "medium") {
+      return "Media"
+    }
+    return "Alta"
+  }
+
   const loadData = async () => {
     try {
       setLoading(true)
@@ -24,7 +34,7 @@ export default function AlertsRecommendationsView() {
       setAlerts(alertsData)
       setRecommendations(recommendationData)
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar insights")
+      setError(requestError instanceof Error ? requestError.message : "No se pudo cargar análisis")
     } finally {
       setLoading(false)
     }
@@ -45,9 +55,9 @@ export default function AlertsRecommendationsView() {
           onChange={(event) => setSeverity(event.target.value)}
         >
           <option value="">Todas las severidades</option>
-          <option value="low">low</option>
-          <option value="medium">medium</option>
-          <option value="high">high</option>
+          <option value="low">Baja</option>
+          <option value="medium">Media</option>
+          <option value="high">Alta</option>
         </select>
         <Button onClick={() => void loadData()} disabled={loading}>
           Aplicar
@@ -67,7 +77,7 @@ export default function AlertsRecommendationsView() {
               <p className="font-medium">{alert.title}</p>
               <p className="text-sm text-muted-foreground">{alert.message}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {alert.severity} · {alert.is_resolved ? "resuelta" : "abierta"}
+                {getSeverityLabel(alert.severity)} · {alert.is_resolved ? "Resuelta" : "Abierta"}
               </p>
             </div>
           ))}

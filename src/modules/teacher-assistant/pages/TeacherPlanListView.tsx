@@ -7,9 +7,20 @@ import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/t
 
 export default function TeacherPlanListView() {
   const [response, setResponse] = useState<PaginatedResponse<PlanAssignment> | null>(null)
+  const [planTitles, setPlanTitles] = useState<Record<number, string>>({})
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const getStatusLabel = (statusValue: PlanAssignment["status"]) => {
+    if (statusValue === "assigned") {
+      return "Asignado"
+    }
+    if (statusValue === "in_progress") {
+      return "En progreso"
+    }
+    return "Completado"
+  }
 
   const loadAssignments = async () => {
     try {
@@ -17,6 +28,14 @@ export default function TeacherPlanListView() {
       setError("")
       const data = await teacherAssistantApi.getMyAssignments({ page })
       setResponse(data)
+
+      const plansResponse = await teacherAssistantApi.listPlans({ page: 1 })
+      setPlanTitles(
+        plansResponse.results.reduce<Record<number, string>>((accumulator, plan) => {
+          accumulator[plan.id] = plan.title
+          return accumulator
+        }, {}),
+      )
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudieron cargar tus planes")
     } finally {
@@ -48,8 +67,8 @@ export default function TeacherPlanListView() {
           {response?.results.map((assignment) => (
             <div key={assignment.id} className="rounded-md border border-border p-3 flex items-center justify-between gap-3">
               <div>
-                <p className="font-medium">Asignación #{assignment.id}</p>
-                <p className="text-sm text-muted-foreground">Estado: {assignment.status}</p>
+                <p className="font-medium">{assignment.plan_title?.trim() || planTitles[assignment.plan] || `Asignación #${assignment.id}`}</p>
+                <p className="text-sm text-muted-foreground">Estado: {getStatusLabel(assignment.status)}</p>
                 <p className="text-sm text-muted-foreground">Progreso: {assignment.progress_percentage}%</p>
               </div>
               <Button asChild>
