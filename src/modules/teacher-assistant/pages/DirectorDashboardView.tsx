@@ -1,13 +1,130 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
 import { DirectorDashboardResponse } from "@/modules/teacher-assistant/types"
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/shared/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from "recharts"
 
 export default function DirectorDashboardView() {
   const [dashboard, setDashboard] = useState<DirectorDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const teacherProgressData = useMemo(
+    () =>
+      dashboard?.teachers.map((teacher) => ({
+        teacher: teacher.teacher_name,
+        progress: Number(teacher.average_progress_percentage.toFixed(1)),
+      })) ?? [],
+    [dashboard],
+  )
+
+  const teacherWorkloadData = useMemo(
+    () =>
+      dashboard?.teachers.map((teacher) => ({
+        teacher: teacher.teacher_name,
+        assignments: teacher.total_assignments,
+        alerts: teacher.active_alerts,
+      })) ?? [],
+    [dashboard],
+  )
+
+  const assignmentStatusData = useMemo(() => {
+    const statusTotals = {
+      assigned: 0,
+      in_progress: 0,
+      completed: 0,
+    }
+
+    dashboard?.teachers.forEach((teacher) => {
+      teacher.plans.forEach((plan) => {
+        statusTotals[plan.status] += 1
+      })
+    })
+
+    return [
+      { statusKey: "assigned", status: "Asignadas", count: statusTotals.assigned, fill: "var(--color-muted-foreground)" },
+      { statusKey: "in_progress", status: "En progreso", count: statusTotals.in_progress, fill: "var(--color-secondary)" },
+      { statusKey: "completed", status: "Completadas", count: statusTotals.completed, fill: "var(--color-primary)" },
+    ]
+  }, [dashboard])
+
+  const planProgressData = useMemo(() => {
+    const aggregateByPlan = new Map<number, { planTitle: string; totalProgress: number; count: number }>()
+
+    dashboard?.teachers.forEach((teacher) => {
+      teacher.plans.forEach((plan) => {
+        const existing = aggregateByPlan.get(plan.plan_id)
+        if (existing) {
+          existing.totalProgress += plan.progress_percentage
+          existing.count += 1
+          return
+        }
+
+        aggregateByPlan.set(plan.plan_id, {
+          planTitle: plan.plan_title,
+          totalProgress: plan.progress_percentage,
+          count: 1,
+        })
+      })
+    })
+
+    return Array.from(aggregateByPlan.entries())
+      .map(([planId, value]) => ({
+        planId,
+        plan: value.planTitle,
+        avgProgress: Number((value.totalProgress / value.count).toFixed(1)),
+      }))
+      .sort((left, right) => right.avgProgress - left.avgProgress)
+  }, [dashboard])
+
+  const progressChartConfig = {
+    progress: {
+      label: "Progreso promedio",
+      color: "var(--color-primary)",
+    },
+  } satisfies ChartConfig
+
+  const planProgressChartConfig = {
+    avgProgress: {
+      label: "Progreso promedio del plan",
+      color: "var(--color-primary)",
+    },
+  } satisfies ChartConfig
+
+  const workloadChartConfig = {
+    assignments: {
+      label: "Asignaciones",
+      color: "var(--color-secondary)",
+    },
+    alerts: {
+      label: "Alertas activas",
+      color: "var(--color-destructive)",
+    },
+  } satisfies ChartConfig
+
+  const statusChartConfig = {
+    assigned: {
+      label: "Asignadas",
+      color: "var(--color-muted-foreground)",
+    },
+    in_progress: {
+      label: "En progreso",
+      color: "var(--color-secondary)",
+    },
+    completed: {
+      label: "Completadas",
+      color: "var(--color-primary)",
+    },
+  } satisfies ChartConfig
 
   const loadDashboard = async () => {
     try {
@@ -59,6 +176,99 @@ export default function DirectorDashboardView() {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Progreso promedio por docente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {teacherProgressData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+            ) : (
+              <ChartContainer config={progressChartConfig} className="h-[300px] w-full">
+                <BarChart data={teacherProgressData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
+                  <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="progress" radius={4} fill="var(--color-progress)" />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Estado de asignaciones</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {assignmentStatusData.every((item) => item.count === 0) ? (
+              <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+            ) : (
+              <ChartContainer config={statusChartConfig} className="h-[300px] w-full">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
+                  <Pie
+                    data={assignmentStatusData}
+                    dataKey="count"
+                    nameKey="status"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                  />
+                  <ChartLegend content={<ChartLegendContent nameKey="statusKey" />} />
+                </PieChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Asignaciones y alertas por docente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {teacherWorkloadData.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+          ) : (
+            <ChartContainer config={workloadChartConfig} className="h-[320px] w-full">
+              <BarChart data={teacherWorkloadData}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" />
+                <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" />
+              </BarChart>
+            </ChartContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Progreso promedio por plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {planProgressData.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+          ) : (
+            <ChartContainer config={planProgressChartConfig} className="h-[320px] w-full">
+              <BarChart data={planProgressData}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
+                <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" />
+              </BarChart>
+            </ChartContainer>
+          )}
         </CardContent>
       </Card>
     </div>
