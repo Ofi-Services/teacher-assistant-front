@@ -65,6 +65,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const [currentMoodEmoticon, setCurrentMoodEmoticon] = useState(DEFAULT_MOOD_EMOTICON);
   const [isDockVisible, setIsDockVisible] = useState(false);
   const hasAgentId = Boolean(agentId?.trim());
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const happyStateTimeoutRef = useRef<number | null>(null);
   const happyEmoticonTimeoutRef = useRef<number | null>(null);
@@ -174,8 +175,11 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [chatMessages, isFullView]);
 
   useEffect(() => {
     return () => {
@@ -337,7 +341,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     startSession,
     endSession,
     sendUserMessage,
-    status,
+    status: conversationStatus,
     isSpeaking,
     getOutputByteFrequencyData,
     getOutputVolume,
@@ -386,10 +390,10 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   });
 
   useEffect(() => {
-    if (status === 'connected' || status === 'connecting') {
+    if (conversationStatus === 'connected' || conversationStatus === 'connecting') {
       setIsDockVisible(true);
     }
-  }, [status]);
+  }, [conversationStatus]);
 
   useEffect(() => {
     let frameId = 0;
@@ -417,7 +421,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
     frameId = requestAnimationFrame(animateMouth);
     return () => cancelAnimationFrame(frameId);
-  }, [getOutputByteFrequencyData, getOutputVolume, isSpeaking, status]);
+  }, [getOutputByteFrequencyData, getOutputVolume, isSpeaking, conversationStatus]);
 
   const startConversation = useCallback(async () => {
     if (!hasAgentId || !agentId) {
@@ -546,7 +550,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     appendMessage('user', text);
     setMessageInput('');
 
-    if (status === 'disconnected') {
+    if (conversationStatus === 'disconnected') {
       const connected = await startConversation();
       if (!connected) {
         appendMessage('agent', 'No se pudo iniciar la sesión de voz. Verifica los permisos del micrófono e inténtalo de nuevo.');
@@ -560,10 +564,10 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       console.error('No se pudo enviar el mensaje del usuario:', error);
       appendMessage('agent', 'No pude recibir tu mensaje. Inténtalo de nuevo.');
     }
-  }, [appendMessage, hasAgentId, logElevenLabsDebug, messageInput, sendUserMessage, startConversation, status]);
+  }, [appendMessage, hasAgentId, logElevenLabsDebug, messageInput, sendUserMessage, startConversation, conversationStatus]);
 
   const handleToggleCall = () => {
-    if (status === 'disconnected') {
+    if (conversationStatus === 'disconnected') {
       startConversation();
     } else {
       endConversation();
@@ -578,7 +582,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     <>
       {isFullView && (
         <div className="fixed left-0 right-0 top-16 bottom-0 z-40 p-4 md:left-64 md:top-20">
-          <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[460px_1fr]">
+          <div className="grid h-full min-h-0 grid-cols-1 gap-4 lg:grid-cols-[460px_1fr]">
             <aside className="bg-white p-6 flex flex-col items-center justify-center gap-6">
               {!hasAgentId && (
                 <div className="w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-xs text-destructive">
@@ -586,13 +590,13 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                 </div>
               )}
 
-              {status === 'connecting' ? (
+              {conversationStatus === 'connecting' ? (
                 <div className="h-40 w-40 animate-spin rounded-full border-b-2 border-primary" />
               ) : (
                 <div className="relative flex w-full justify-center overflow-visible">
                   <SofiaAvatar3D
                     mouthOpen={mouthOpen}
-                    isSpeaking={status === 'connected' && isSpeaking}
+                    isSpeaking={conversationStatus === 'connected' && isSpeaking}
                     isHappy={isAvatarHappy}
                     showHappyEmoticon={showHappyEmoticon}
                     emoticon={currentMoodEmoticon}
@@ -602,20 +606,20 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
               <button
                 onClick={handleToggleCall}
-                disabled={status === 'connecting' || !hasAgentId}
+                disabled={conversationStatus === 'connecting' || !hasAgentId}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {status === 'connected' ? 'Finalizar chat de voz' : 'Iniciar chat de voz'}
+                {conversationStatus === 'connected' ? 'Finalizar chat de voz' : 'Iniciar chat de voz'}
               </button>
             </aside>
 
-            <section className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm">
+            <section className="flex h-[95%] min-h-0 flex-col rounded-xl border border-border bg-card shadow-sm">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <h3 className="text-sm font-semibold text-foreground">Conversación</h3>
-                <span className="text-xs text-muted-foreground capitalize">{status}</span>
+                <span className="text-xs text-muted-foreground capitalize">{conversationStatus}</span>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+              <div ref={chatScrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-3 space-y-2">
                 {chatMessages.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Empieza a hablar o envía un mensaje para comenzar.</p>
                 ) : (
@@ -650,7 +654,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
                 />
                 <button
                   onClick={() => void handleSendMessage()}
-                  disabled={!messageInput.trim() || !hasAgentId || status === 'connecting'}
+                  disabled={!messageInput.trim() || !hasAgentId || conversationStatus === 'connecting'}
                   className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Enviar
@@ -661,17 +665,17 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
         </div>
       )}
 
-      {!isFullView && isDockVisible && status !== 'disconnected' && (
+      {!isFullView && isDockVisible && conversationStatus !== 'disconnected' && (
         <div className="fixed bottom-4 right-4 z-50 w-[220px] rounded-xl border border-border bg-card shadow-lg p-3 space-y-3">
           <div className="text-xs font-medium text-foreground">Sofia en llamada</div>
 
-          {status === 'connecting' ? (
+          {conversationStatus === 'connecting' ? (
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-primary" />
           ) : (
             <div className="mx-auto w-full max-w-[180px]">
               <SofiaAvatar3D
                 mouthOpen={mouthOpen}
-                isSpeaking={status === 'connected' && isSpeaking}
+                isSpeaking={conversationStatus === 'connected' && isSpeaking}
                 isHappy={isAvatarHappy}
                 showHappyEmoticon={showHappyEmoticon}
                 emoticon={currentMoodEmoticon}
@@ -688,7 +692,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
         </div>
       )}
 
-      {!isFullView && status === 'disconnected' && (
+      {!isFullView && conversationStatus === 'disconnected' && (
         <button
           onClick={() => {
             setIsDockVisible(true);
