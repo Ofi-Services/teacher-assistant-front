@@ -17,6 +17,7 @@ export default function AssignmentDetailView() {
   const [plan, setPlan] = useState<TrainingPlan | null>(null)
   const [loading, setLoading] = useState(true)
   const [completingModuleId, setCompletingModuleId] = useState<number | null>(null)
+  const [moduleEvidenceFiles, setModuleEvidenceFiles] = useState<Record<number, File | null>>({})
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
@@ -87,6 +88,7 @@ export default function AssignmentDetailView() {
     }
 
     const currentProgress = getModuleProgress(moduleId)
+    const selectedEvidenceFile = moduleEvidenceFiles[moduleId] ?? null
 
     try {
       setCompletingModuleId(moduleId)
@@ -97,8 +99,13 @@ export default function AssignmentDetailView() {
         percent_completed: 100,
         notes: currentProgress?.notes || "Módulo completado",
         evidence_url: currentProgress?.evidence_url || "https://example.com/completed",
+        evidence_file: selectedEvidenceFile,
       })
       setSuccess("Módulo marcado como completado")
+      setModuleEvidenceFiles((previous) => ({
+        ...previous,
+        [moduleId]: null,
+      }))
       await loadAssignment()
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudo completar el módulo")
@@ -212,6 +219,30 @@ export default function AssignmentDetailView() {
                           <span className="font-medium">Notas:</span> {moduleProgress.notes}
                         </p>
                       )}
+
+                      <div className="mt-3 space-y-1">
+                        <label className="text-sm font-medium" htmlFor={`evidence-file-${module.id ?? index}`}>
+                          Evidencia de finalización
+                        </label>
+                        <input
+                          id={`evidence-file-${module.id ?? index}`}
+                          type="file"
+                          className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1 file:text-sm"
+                          onChange={(event) => {
+                            const selectedFile = event.target.files?.[0] ?? null
+                            const targetModuleId = module.id
+                            if (!targetModuleId) {
+                              return
+                            }
+
+                            setModuleEvidenceFiles((previous) => ({
+                              ...previous,
+                              [targetModuleId]: selectedFile,
+                            }))
+                          }}
+                          disabled={isCompleted || completingModuleId === module.id}
+                        />
+                      </div>
 
                       <div className="mt-3 flex justify-end">
                         <Button

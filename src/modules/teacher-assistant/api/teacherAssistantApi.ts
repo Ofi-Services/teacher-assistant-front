@@ -94,7 +94,7 @@ async function request<T>(
   path: string,
   method: RequestMethod,
   options?: {
-    body?: unknown
+    body?: unknown | FormData
     auth?: boolean
     query?: Record<string, string | number | boolean | undefined>
     retried?: boolean
@@ -102,14 +102,15 @@ async function request<T>(
 ): Promise<T> {
   const { body, auth = true, query, retried = false } = options ?? {}
   const token = getAccessToken()
+  const isFormDataBody = body instanceof FormData
 
   const response = await fetch(buildUrl(path, query), {
     method,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
       ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? (isFormDataBody ? body : JSON.stringify(body)) : undefined,
   })
 
   if (response.status === 401 && auth && !retried) {
@@ -181,9 +182,34 @@ export const teacherAssistantApi = {
       module: number
       percent_completed: number
       notes: string
-      evidence_url: string
+      evidence_url?: string
+      evidence_file?: File | null
     },
-  ) => request<ProgressRecord>(`/api/assignments/${assignmentId}/progress/`, "PATCH", { body: payload }),
+  ) => {
+    if (payload.evidence_file) {
+      const formData = new FormData()
+      formData.append("module", String(payload.module))
+      formData.append("percent_completed", String(payload.percent_completed))
+      formData.append("notes", payload.notes)
+
+      if (payload.evidence_url && payload.evidence_url.trim() !== "") {
+        formData.append("evidence_url", payload.evidence_url)
+      }
+
+      formData.append("evidence_file", payload.evidence_file)
+
+      return request<ProgressRecord>(`/api/assignments/${assignmentId}/progress/`, "PATCH", { body: formData })
+    }
+
+    return request<ProgressRecord>(`/api/assignments/${assignmentId}/progress/`, "PATCH", {
+      body: {
+        module: payload.module,
+        percent_completed: payload.percent_completed,
+        notes: payload.notes,
+        evidence_url: payload.evidence_url ?? "",
+      },
+    })
+  },
 
   directorDashboard: () =>
     request<DirectorDashboardResponse>("/api/assignments/dashboard/director/", "GET"),

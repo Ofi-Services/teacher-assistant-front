@@ -61,6 +61,8 @@ export interface IntelligentAlert {
   message: string
   severity: "low" | "medium" | "high"
   is_resolved: boolean
+  teacher_name: string
+  plan_name: string
   created_at: string
 }
 
