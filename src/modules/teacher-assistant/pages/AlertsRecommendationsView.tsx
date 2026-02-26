@@ -9,6 +9,8 @@ export default function AlertsRecommendationsView() {
   const [alertsPage, setAlertsPage] = useState(1)
   const [alerts, setAlerts] = useState<PaginatedResponse<IntelligentAlert> | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sendingAlertId, setSendingAlertId] = useState<number | null>(null)
+  const [alertNotificationMessages, setAlertNotificationMessages] = useState<Record<number, string>>({})
   const [error, setError] = useState("")
 
   const getSeverityLabel = (severityValue: "low" | "medium" | "high") => {
@@ -37,6 +39,25 @@ export default function AlertsRecommendationsView() {
   useEffect(() => {
     void loadData()
   }, [alertsPage])
+
+  const sendAlertNotification = async (alertId: number) => {
+    try {
+      setSendingAlertId(alertId)
+      setAlertNotificationMessages((prev) => ({ ...prev, [alertId]: "" }))
+      await teacherAssistantApi.sendAlertToSlack(alertId)
+      setAlertNotificationMessages((prev) => ({
+        ...prev,
+        [alertId]: "Notificación enviada a Slack",
+      }))
+    } catch (requestError) {
+      setAlertNotificationMessages((prev) => ({
+        ...prev,
+        [alertId]: requestError instanceof Error ? requestError.message : "No se pudo enviar la notificación",
+      }))
+    } finally {
+      setSendingAlertId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -76,6 +97,20 @@ export default function AlertsRecommendationsView() {
               <p className="text-xs text-muted-foreground mt-1">
                 {getSeverityLabel(alert.severity)} · {alert.is_resolved ? "Resuelta" : "Abierta"}
               </p>
+              <div className="mt-3 flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={sendingAlertId === alert.id}
+                  onClick={() => void sendAlertNotification(alert.id)}
+                >
+                  {sendingAlertId === alert.id ? "Enviando..." : "Enviar notificación"}
+                </Button>
+                {alertNotificationMessages[alert.id] && (
+                  <p className="text-xs text-muted-foreground">{alertNotificationMessages[alert.id]}</p>
+                )}
+              </div>
             </div>
           ))}
           <div className="flex items-center gap-2 pt-2">

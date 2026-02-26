@@ -9,6 +9,7 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 interface PlanFormModule {
   title: string
   description: string
+  url: string
   order: number
   expected_days: number
 }
@@ -26,11 +27,14 @@ export default function PlanCreateEditView() {
   const [objectives, setObjectives] = useState("")
   const [durationWeeks, setDurationWeeks] = useState(4)
   const [modules, setModules] = useState<PlanFormModule[]>([
-    { title: "", description: "", order: 1, expected_days: 7 },
+    { title: "", description: "", url: "", order: 1, expected_days: 7 },
   ])
 
   const addModule = () => {
-    setModules((prev) => [...prev, { title: "", description: "", order: prev.length + 1, expected_days: 7 }])
+    setModules((prev) => [
+      ...prev,
+      { title: "", description: "", url: "", order: prev.length + 1, expected_days: 7 },
+    ])
   }
 
   const updateModule = (index: number, patch: Partial<PlanFormModule>) => {
@@ -60,10 +64,11 @@ export default function PlanCreateEditView() {
                 .map((module) => ({
                   title: module.title,
                   description: module.description,
+                  url: module.link ?? "",
                   order: module.order,
                   expected_days: module.expected_days,
                 }))
-            : [{ title: "", description: "", order: 1, expected_days: 7 }],
+            : [{ title: "", description: "", url: "", order: 1, expected_days: 7 }],
         )
       } catch (requestError) {
         setError(requestError instanceof Error ? requestError.message : "No se pudo cargar el plan para edición")
@@ -87,7 +92,13 @@ export default function PlanCreateEditView() {
           description,
           objectives,
           duration_weeks: durationWeeks,
-          modules,
+          modules: modules.map((module, index) => ({
+            title: module.title,
+            description: module.description,
+            link: module.url,
+            order: index + 1,
+            expected_days: module.expected_days,
+          })),
         })
       } else {
         await teacherAssistantApi.createPlan({
@@ -95,7 +106,13 @@ export default function PlanCreateEditView() {
           description,
           objectives,
           duration_weeks: durationWeeks,
-          modules,
+          modules: modules.map((module, index) => ({
+            title: module.title,
+            description: module.description,
+            link: module.url,
+            order: index + 1,
+            expected_days: module.expected_days,
+          })),
         })
       }
     } catch (requestError) {
@@ -175,22 +192,13 @@ export default function PlanCreateEditView() {
                     onChange={(event) => updateModule(index, { description: event.target.value })}
                     required
                   />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      type="number"
-                      min={1}
-                      value={module.order}
-                      onChange={(event) => updateModule(index, { order: Number(event.target.value) })}
-                      required
-                    />
-                    <Input
-                      type="number"
-                      min={1}
-                      value={module.expected_days}
-                      onChange={(event) => updateModule(index, { expected_days: Number(event.target.value) })}
-                      required
-                    />
-                  </div>
+                  <Input
+                    type="url"
+                    value={module.url}
+                    placeholder="URL módulo"
+                    onChange={(event) => updateModule(index, { url: event.target.value })}
+                    required
+                  />
                 </div>
               ))}
             </div>

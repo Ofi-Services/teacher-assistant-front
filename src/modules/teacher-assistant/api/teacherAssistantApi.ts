@@ -226,6 +226,9 @@ export const teacherAssistantApi = {
   listAlerts: (query?: { severity?: string; is_resolved?: boolean; assignment?: number; page?: number }) =>
     request<PaginatedResponse<IntelligentAlert>>("/api/insights/alerts/", "GET", { query }),
 
+  sendAlertToSlack: (alertId: number) =>
+    request<null>(`/api/insights/alerts/${alertId}/send-slack/`, "POST"),
+
   listRecommendations: (query?: { assignment?: number; page?: number }) =>
     request<PaginatedResponse<AIRecommendation>>("/api/insights/recommendations/", "GET", { query }),
 }
