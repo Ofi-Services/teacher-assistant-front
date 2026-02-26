@@ -6,6 +6,16 @@ import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
 
+const PLAN_FORM_PREFILL_STORAGE_KEY = "ofi_plan_form_prefill"
+const FILL_PLAN_FORM_EVENT_NAME = "ofi:fill-plan-form"
+
+type ToolFillPlanPayload = {
+  titulo?: string
+  descripcion?: string
+  objetivos?: string
+  duracion_semanas?: number | string
+}
+
 interface PlanFormModule {
   title: string
   description: string
@@ -79,6 +89,57 @@ export default function PlanCreateEditView() {
 
     void loadPlanForEdit()
   }, [editId, isEdit])
+
+  useEffect(() => {
+    if (isEdit) {
+      return
+    }
+
+    const applyToolPrefill = (rawPayload: unknown) => {
+      if (!rawPayload || typeof rawPayload !== "object") return
+
+      const payload = rawPayload as ToolFillPlanPayload
+
+      if (typeof payload.titulo === "string") {
+        setTitle(payload.titulo)
+      }
+
+      if (typeof payload.descripcion === "string") {
+        setDescription(payload.descripcion)
+      }
+
+      if (typeof payload.objetivos === "string") {
+        setObjectives(payload.objetivos)
+      }
+
+      const parsedDuration = Number(payload.duracion_semanas)
+      if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+        setDurationWeeks(parsedDuration)
+      }
+    }
+
+    const storedPayload = localStorage.getItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+    if (storedPayload) {
+      try {
+        applyToolPrefill(JSON.parse(storedPayload))
+      } catch {
+        // ignore malformed storage payload
+      } finally {
+        localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+      }
+    }
+
+    const handleFillEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolFillPlanPayload>
+      applyToolPrefill(customEvent.detail)
+    }
+
+    window.addEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+
+    return () => {
+      window.removeEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+    }
+  }, [isEdit])
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()

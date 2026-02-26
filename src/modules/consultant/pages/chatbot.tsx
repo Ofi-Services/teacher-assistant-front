@@ -9,6 +9,8 @@ import SofiaAvatar3D from '../components/SofiaAvatar3D';
 
 const COURSE_FORM_PREFILL_STORAGE_KEY = 'ofi_course_form_prefill';
 const FILL_FORM_EVENT_NAME = 'ofi:fill-course-creation-form';
+const PLAN_FORM_PREFILL_STORAGE_KEY = 'ofi_plan_form_prefill';
+const FILL_PLAN_FORM_EVENT_NAME = 'ofi:fill-plan-form';
 const DEFAULT_MOOD_EMOTICON = '🙂';
 
 const MOOD_EMOTICONS: Record<string, string> = {
@@ -49,6 +51,13 @@ interface ChatMessage {
   role: 'user' | 'agent';
   text: string;
 }
+
+type ToolFillPlanPayload = {
+  titulo?: string;
+  descripcion?: string;
+  objetivos?: string;
+  duracion_semanas?: number | string;
+};
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const { user } = useAuth();
@@ -451,6 +460,8 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           'open-mis-planes',
           'open-asignaciones',
           'crear-plan',
+          'move-to-create-plan',
+          'fill-plan-form',
         ],
       });
 
@@ -504,6 +515,34 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
             setIsDockVisible(true);
             navigate('/director/plans/new');
           },
+          "move-to-create-plan": async () => {
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+          },
+          "fill-plan-form": async (payload: ToolFillPlanPayload) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][fill-plan-form]', payload);
+
+            localStorage.setItem(PLAN_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+            appendMessage('agent', 'Formulario del plan completado. ¿Quieres que empecemos a agregar módulos?');
+
+            window.dispatchEvent(new CustomEvent(FILL_PLAN_FORM_EVENT_NAME, {
+              detail: payload || {},
+            }));
+          },
+          FillPlanForm: async (payload: ToolFillPlanPayload) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][FillPlanForm]', payload);
+
+            localStorage.setItem(PLAN_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+            appendMessage('agent', 'Formulario del plan completado. ¿Quieres que empecemos a agregar módulos?');
+
+            window.dispatchEvent(new CustomEvent(FILL_PLAN_FORM_EVENT_NAME, {
+              detail: payload || {},
+            }));
+          },
           "fill-course-creation-form": async (payload: Record<string, unknown>) => {
             logElevenLabsDebug('[ElevenLabs][TOOL][fill-course-creation-form]', payload);
 
@@ -533,7 +572,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
       console.error('Failed to start conversation:', error);
       return false;
     }
-  }, [agentId, hasAgentId, isPermissionGranted, logElevenLabsDebug, navigate, openAgentModal, startSession, user?.role]);
+  }, [agentId, appendMessage, hasAgentId, isPermissionGranted, logElevenLabsDebug, navigate, openAgentModal, startSession, user?.role]);
 
   const endConversation = useCallback(async () => {
     logElevenLabsDebug('[ElevenLabs][OUT][END_SESSION]');
