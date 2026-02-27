@@ -126,6 +126,24 @@ export default function DirectorDashboardView() {
     },
   } satisfies ChartConfig
 
+  const kpiItems = useMemo(() => {
+    const teachers = dashboard?.teachers ?? []
+    const totalTeachers = teachers.length
+    const totalAssignments = teachers.reduce((acc, teacher) => acc + teacher.total_assignments, 0)
+    const totalActiveAlerts = teachers.reduce((acc, teacher) => acc + teacher.active_alerts, 0)
+    const averageProgress =
+      totalTeachers === 0
+        ? 0
+        : Number((teachers.reduce((acc, teacher) => acc + teacher.average_progress_percentage, 0) / totalTeachers).toFixed(1))
+
+    return [
+      { key: "teachers", label: "Docentes", value: String(totalTeachers) },
+      { key: "assignments", label: "Asignaciones", value: String(totalAssignments) },
+      { key: "alerts", label: "Alertas activas", value: String(totalActiveAlerts) },
+      { key: "progress", label: "Progreso promedio", value: `${averageProgress}%` },
+    ]
+  }, [dashboard])
+
   const loadDashboard = async () => {
     try {
       setLoading(true)
@@ -153,6 +171,19 @@ export default function DirectorDashboardView() {
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpiItems.map((item) => (
+          <Card key={item.key}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{item.value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
