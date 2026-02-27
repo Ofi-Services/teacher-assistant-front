@@ -154,31 +154,6 @@ export default function DirectorDashboardView() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Seguimiento de progreso</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading && <p className="text-sm text-muted-foreground">Cargando panel...</p>}
-          {!loading && dashboard?.teachers.length === 0 && (
-            <p className="text-sm text-muted-foreground">Sin docentes con asignaciones todavía.</p>
-          )}
-          <div className="space-y-4">
-            {dashboard?.teachers.map((teacher) => (
-              <div key={teacher.teacher_id} className="rounded-md border border-border p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{teacher.teacher_name}</h3>
-                  <p className="text-sm text-muted-foreground">Progreso promedio: {teacher.average_progress_percentage}%</p>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Asignaciones: {teacher.total_assignments} · Alertas activas: {teacher.active_alerts}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -226,49 +201,74 @@ export default function DirectorDashboardView() {
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Asignaciones y alertas por docente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {teacherWorkloadData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+            ) : (
+              <ChartContainer config={workloadChartConfig} className="h-[320px] w-full">
+                <BarChart data={teacherWorkloadData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" />
+                  <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Progreso promedio por plan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {planProgressData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
+            ) : (
+              <ChartContainer config={planProgressChartConfig} className="h-[320px] w-full">
+                <BarChart data={planProgressData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
+                  <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Asignaciones y alertas por docente</CardTitle>
+          <CardTitle>Seguimiento de progreso</CardTitle>
         </CardHeader>
         <CardContent>
-          {teacherWorkloadData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
-          ) : (
-            <ChartContainer config={workloadChartConfig} className="h-[320px] w-full">
-              <BarChart data={teacherWorkloadData}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" />
-                <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" />
-              </BarChart>
-            </ChartContainer>
+          {loading && <p className="text-sm text-muted-foreground">Cargando panel...</p>}
+          {!loading && dashboard?.teachers.length === 0 && (
+            <p className="text-sm text-muted-foreground">Sin docentes con asignaciones todavía.</p>
           )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Progreso promedio por plan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {planProgressData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin datos para graficar.</p>
-          ) : (
-            <ChartContainer config={planProgressChartConfig} className="h-[320px] w-full">
-              <BarChart data={planProgressData}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
-                <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" />
-              </BarChart>
-            </ChartContainer>
-          )}
+          <div className="space-y-4">
+            {dashboard?.teachers.map((teacher) => (
+              <div key={teacher.teacher_id} className="rounded-md border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">{teacher.teacher_name}</h3>
+                  <p className="text-sm text-muted-foreground">Progreso promedio: {teacher.average_progress_percentage}%</p>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Asignaciones: {teacher.total_assignments} · Alertas activas: {teacher.active_alerts}
+                </p>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
