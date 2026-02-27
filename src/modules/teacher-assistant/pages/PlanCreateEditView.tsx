@@ -8,12 +8,21 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 
 const PLAN_FORM_PREFILL_STORAGE_KEY = "ofi_plan_form_prefill"
 const FILL_PLAN_FORM_EVENT_NAME = "ofi:fill-plan-form"
+const CREATE_NEW_MODULE_STORAGE_KEY = "ofi_plan_module_prefill"
+const CREATE_NEW_MODULE_EVENT_NAME = "ofi:create-new-module"
 
 type ToolFillPlanPayload = {
   titulo?: string
   descripcion?: string
   objetivos?: string
   duracion_semanas?: number | string
+}
+
+type ToolCreateNewModulePayload = {
+  title?: string
+  description?: string
+  titulo?: string
+  descripcion?: string
 }
 
 interface PlanFormModule {
@@ -138,6 +147,75 @@ export default function PlanCreateEditView() {
 
     return () => {
       window.removeEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+    }
+  }, [isEdit])
+
+  useEffect(() => {
+    if (isEdit) {
+      return
+    }
+
+    const applyModulePrefill = (rawPayload: unknown) => {
+      if (!rawPayload || typeof rawPayload !== "object") return
+
+      const payload = rawPayload as ToolCreateNewModulePayload
+      const nextTitle = (payload.title ?? payload.titulo ?? "").trim()
+      const nextDescription = (payload.description ?? payload.descripcion ?? "").trim()
+
+      if (!nextTitle && !nextDescription) {
+        return
+      }
+
+      setModules((previous) => {
+        const emptyIndex = previous.findIndex(
+          (module) => module.title.trim() === "" && module.description.trim() === "",
+        )
+
+        if (emptyIndex >= 0) {
+          return previous.map((module, index) =>
+            index === emptyIndex
+              ? {
+                  ...module,
+                  title: nextTitle || module.title,
+                  description: nextDescription || module.description,
+                }
+              : module,
+          )
+        }
+
+        return [
+          ...previous,
+          {
+            title: nextTitle,
+            description: nextDescription,
+            url: "",
+            order: previous.length + 1,
+            expected_days: 7,
+          },
+        ]
+      })
+    }
+
+    const storedPayload = localStorage.getItem(CREATE_NEW_MODULE_STORAGE_KEY)
+    if (storedPayload) {
+      try {
+        applyModulePrefill(JSON.parse(storedPayload))
+      } catch {
+        // ignore malformed storage payload
+      } finally {
+        localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
+      }
+    }
+
+    const handleCreateModuleEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolCreateNewModulePayload>
+      applyModulePrefill(customEvent.detail)
+    }
+
+    window.addEventListener(CREATE_NEW_MODULE_EVENT_NAME, handleCreateModuleEvent as EventListener)
+
+    return () => {
+      window.removeEventListener(CREATE_NEW_MODULE_EVENT_NAME, handleCreateModuleEvent as EventListener)
     }
   }, [isEdit])
 

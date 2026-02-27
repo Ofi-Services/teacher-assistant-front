@@ -40,7 +40,7 @@ export default function LoginPage() {
               <span className="text-primary">Academy</span>
             </h1>
             <p className="text-muted-foreground mt-2 text-base">
-              Plataforma Director/Teacher conectada al backend Django
+              
             </p>
           </div>
 

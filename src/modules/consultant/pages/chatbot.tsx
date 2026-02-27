@@ -11,6 +11,8 @@ const COURSE_FORM_PREFILL_STORAGE_KEY = 'ofi_course_form_prefill';
 const FILL_FORM_EVENT_NAME = 'ofi:fill-course-creation-form';
 const PLAN_FORM_PREFILL_STORAGE_KEY = 'ofi_plan_form_prefill';
 const FILL_PLAN_FORM_EVENT_NAME = 'ofi:fill-plan-form';
+const CREATE_NEW_MODULE_STORAGE_KEY = 'ofi_plan_module_prefill';
+const CREATE_NEW_MODULE_EVENT_NAME = 'ofi:create-new-module';
 const DEFAULT_MOOD_EMOTICON = '🙂';
 
 const MOOD_EMOTICONS: Record<string, string> = {
@@ -57,6 +59,13 @@ type ToolFillPlanPayload = {
   descripcion?: string;
   objetivos?: string;
   duracion_semanas?: number | string;
+};
+
+type ToolCreateNewModulePayload = {
+  title?: string;
+  description?: string;
+  titulo?: string;
+  descripcion?: string;
 };
 
 export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
@@ -462,6 +471,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           'crear-plan',
           'move-to-create-plan',
           'fill-plan-form',
+          'create-new-module',
         ],
       });
 
@@ -528,6 +538,28 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
             appendMessage('agent', 'Formulario del plan completado. ¿Quieres que empecemos a agregar módulos?');
 
             window.dispatchEvent(new CustomEvent(FILL_PLAN_FORM_EVENT_NAME, {
+              detail: payload || {},
+            }));
+          },
+          "create-new-module": async (payload: ToolCreateNewModulePayload) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][create-new-module]', payload);
+
+            localStorage.setItem(CREATE_NEW_MODULE_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+
+            window.dispatchEvent(new CustomEvent(CREATE_NEW_MODULE_EVENT_NAME, {
+              detail: payload || {},
+            }));
+          },
+          CreateNewModule: async (payload: ToolCreateNewModulePayload) => {
+            logElevenLabsDebug('[ElevenLabs][TOOL][CreateNewModule]', payload);
+
+            localStorage.setItem(CREATE_NEW_MODULE_STORAGE_KEY, JSON.stringify(payload || {}));
+            setIsDockVisible(true);
+            navigate('/director/plans/new');
+
+            window.dispatchEvent(new CustomEvent(CREATE_NEW_MODULE_EVENT_NAME, {
               detail: payload || {},
             }));
           },
