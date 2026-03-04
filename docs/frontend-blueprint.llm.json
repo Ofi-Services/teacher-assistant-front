@@ -1,0 +1,383 @@
+{
+  "project": {
+    "name": "Teacher Assistant Frontend",
+    "goal": "Construir frontend completo para directores y profesores consumiendo el backend Django REST MVP",
+    "apiBaseUrl": "http://127.0.0.1:8000"
+  },
+  "auth": {
+    "type": "JWT",
+    "loginEndpoint": "/api/auth/token/",
+    "refreshEndpoint": "/api/auth/token/refresh/",
+    "header": "Authorization: Bearer <access_token>",
+    "currentUserEndpoint": "/api/accounts/profile/me/",
+    "roleField": "role",
+    "roles": ["director", "teacher"]
+  },
+  "domainEntities": {
+    "User": {
+      "fields": {
+        "id": "number",
+        "username": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "email": "string",
+        "role": "director|teacher"
+      }
+    },
+    "TrainingPlan": {
+      "fields": {
+        "id": "number",
+        "title": "string",
+        "description": "string",
+        "objectives": "string",
+        "duration_weeks": "number",
+        "created_by": "number",
+        "created_at": "datetime",
+        "updated_at": "datetime",
+        "modules": "PlanModule[]"
+      }
+    },
+    "PlanModule": {
+      "fields": {
+        "id": "number",
+        "title": "string",
+        "description": "string",
+        "order": "number",
+        "expected_days": "number"
+      }
+    },
+    "PlanAssignment": {
+      "fields": {
+        "id": "number",
+        "plan": "number",
+        "teacher": "number",
+        "assigned_by": "number",
+        "status": "assigned|in_progress|completed",
+        "progress_percentage": "number",
+        "assigned_at": "datetime",
+        "due_date": "date|null",
+        "last_activity_at": "datetime|null",
+        "progress_records": "ProgressRecord[]"
+      }
+    },
+    "ProgressRecord": {
+      "fields": {
+        "id": "number",
+        "module": "number",
+        "percent_completed": "number",
+        "notes": "string",
+        "evidence_url": "string",
+        "updated_at": "datetime"
+      }
+    },
+    "IntelligentAlert": {
+      "fields": {
+        "id": "number",
+        "title": "string",
+        "message": "string",
+        "severity": "low|medium|high",
+        "is_resolved": "boolean",
+        "created_at": "datetime"
+      }
+    },
+    "AIRecommendation": {
+      "fields": {
+        "id": "number",
+        "recommendation": "string",
+        "rationale": "string",
+        "context": "object",
+        "created_at": "datetime"
+      }
+    }
+  },
+  "frontendArchitecture": {
+    "requiredViews": [
+      "LoginView",
+      "DirectorDashboardView",
+      "TeacherDashboardView",
+      "PlanListView",
+      "PlanCreateEditView",
+      "AssignmentManagementView",
+      "AssignmentDetailView",
+      "AlertsRecommendationsView"
+    ],
+    "roleRouting": {
+      "director": [
+        "/director/dashboard",
+        "/director/plans",
+        "/director/plans/new",
+        "/director/assignments",
+        "/director/alerts"
+      ],
+      "teacher": [
+        "/teacher/dashboard",
+        "/teacher/plans",
+        "/teacher/assignments/:id"
+      ]
+    },
+    "stateSlices": [
+      "auth",
+      "profile",
+      "plans",
+      "assignments",
+      "progress",
+      "alerts",
+      "recommendations",
+      "dashboard"
+    ]
+  },
+  "apiContracts": [
+    {
+      "name": "Login",
+      "method": "POST",
+      "path": "/api/auth/token/",
+      "auth": false,
+      "request": {
+        "username": "string",
+        "password": "string"
+      },
+      "response": {
+        "access": "string",
+        "refresh": "string"
+      }
+    },
+    {
+      "name": "GetProfile",
+      "method": "GET",
+      "path": "/api/accounts/profile/me/",
+      "auth": true,
+      "response": "User"
+    },
+    {
+      "name": "CreateUser",
+      "method": "POST",
+      "path": "/api/accounts/users/",
+      "auth": true,
+      "roles": ["director"],
+      "request": {
+        "username": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "email": "string",
+        "role": "director|teacher",
+        "password": "string(min:8)"
+      },
+      "response": "User"
+    },
+    {
+      "name": "ListPlans",
+      "method": "GET",
+      "path": "/api/training/plans/",
+      "auth": true,
+      "query": ["search", "ordering", "created_by", "page"],
+      "response": "paginated<TrainingPlan>"
+    },
+    {
+      "name": "CreatePlan",
+      "method": "POST",
+      "path": "/api/training/plans/",
+      "auth": true,
+      "roles": ["director"],
+      "request": {
+        "title": "string",
+        "description": "string",
+        "objectives": "string",
+        "duration_weeks": "number",
+        "modules": "PlanModule[]"
+      },
+      "response": "TrainingPlan"
+    },
+    {
+      "name": "UpdatePlan",
+      "method": "PATCH",
+      "path": "/api/training/plans/{planId}/",
+      "auth": true,
+      "roles": ["director"],
+      "request": "partial<TrainingPlan>",
+      "response": "TrainingPlan"
+    },
+    {
+      "name": "ListAssignments",
+      "method": "GET",
+      "path": "/api/assignments/",
+      "auth": true,
+      "query": ["status", "teacher", "plan", "search", "ordering", "page"],
+      "response": "paginated<PlanAssignment>"
+    },
+    {
+      "name": "CreateAssignment",
+      "method": "POST",
+      "path": "/api/assignments/",
+      "auth": true,
+      "roles": ["director"],
+      "request": {
+        "plan": "number",
+        "teacher": "number",
+        "due_date": "YYYY-MM-DD"
+      },
+      "response": "PlanAssignment"
+    },
+    {
+      "name": "GetMyAssignments",
+      "method": "GET",
+      "path": "/api/assignments/me/",
+      "auth": true,
+      "roles": ["teacher"],
+      "response": "paginated<PlanAssignment>"
+    },
+    {
+      "name": "UpdateProgress",
+      "method": "PATCH",
+      "path": "/api/assignments/{assignmentId}/progress/",
+      "auth": true,
+      "roles": ["director", "teacher(owner)"],
+      "request": {
+        "module": "number",
+        "percent_completed": "number(0..100)",
+        "notes": "string",
+        "evidence_url": "string(url)"
+      },
+      "response": "ProgressRecord"
+    },
+    {
+      "name": "DirectorDashboard",
+      "method": "GET",
+      "path": "/api/assignments/dashboard/director/",
+      "auth": true,
+      "roles": ["director"],
+      "response": {
+        "generated_at": "datetime",
+        "teachers": [
+          {
+            "teacher_id": "number",
+            "teacher_name": "string",
+            "total_assignments": "number",
+            "average_progress_percentage": "number",
+            "active_alerts": "number",
+            "last_activity_at": "datetime|null",
+            "plans": [
+              {
+                "assignment_id": "number",
+                "plan_id": "number",
+                "plan_title": "string",
+                "status": "assigned|in_progress|completed",
+                "progress_percentage": "number",
+                "active_alerts": "number",
+                "last_activity_at": "datetime|null"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "TeacherDashboard",
+      "method": "GET",
+      "path": "/api/assignments/dashboard/me/",
+      "auth": true,
+      "roles": ["teacher"],
+      "response": {
+        "generated_at": "datetime",
+        "teacher": {
+          "teacher_id": "number",
+          "teacher_name": "string",
+          "total_assignments": "number",
+          "average_progress_percentage": "number",
+          "active_alerts": "number",
+          "last_activity_at": "datetime|null",
+          "plans": "same_plan_object_array"
+        }
+      }
+    },
+    {
+      "name": "GenerateInsights",
+      "method": "POST",
+      "path": "/api/insights/alerts/generate/{assignmentId}/",
+      "auth": true,
+      "roles": ["director", "teacher(owner)"],
+      "response": {
+        "alerts_created": "IntelligentAlert[]",
+        "recommendations_created": "AIRecommendation[]"
+      }
+    },
+    {
+      "name": "ListAlerts",
+      "method": "GET",
+      "path": "/api/insights/alerts/",
+      "auth": true,
+      "query": ["severity", "is_resolved", "assignment", "page"],
+      "response": "paginated<IntelligentAlert>"
+    },
+    {
+      "name": "ListRecommendations",
+      "method": "GET",
+      "path": "/api/insights/recommendations/",
+      "auth": true,
+      "query": ["assignment", "page"],
+      "response": "paginated<AIRecommendation>"
+    }
+  ],
+  "uiFlows": [
+    {
+      "name": "Director main flow",
+      "steps": [
+        "Login as director",
+        "Load profile and role",
+        "Open director dashboard",
+        "Create/Edit plans",
+        "Assign plan to teacher",
+        "Monitor progress and alerts",
+        "Generate AI insights when needed"
+      ]
+    },
+    {
+      "name": "Teacher main flow",
+      "steps": [
+        "Login as teacher",
+        "Load personal dashboard",
+        "Open assigned plan",
+        "Update module progress",
+        "Review alerts and recommendations",
+        "Continue until plan completion"
+      ]
+    }
+  ],
+  "frontendRules": {
+    "rbac": [
+      "Hide director-only actions for teacher role",
+      "Protect routes by role after profile load",
+      "If 403 in action, show authorization message"
+    ],
+    "errorHandling": [
+      "401 => attempt refresh token once, then logout",
+      "403 => show permission error",
+      "400 => map validation errors to form fields",
+      "5xx => show retry message"
+    ],
+    "pagination": {
+      "format": "DRF page number",
+      "keys": ["count", "next", "previous", "results"]
+    }
+  },
+  "seedUsers": [
+    { "username": "director1", "password": "Pass1234!", "role": "director" },
+    { "username": "teacher1", "password": "Pass1234!", "role": "teacher" },
+    { "username": "teacher2", "password": "Pass1234!", "role": "teacher" }
+  ],
+  "implementationHintsForLLM": {
+    "recommendedFrontendStack": ["React", "TypeScript", "React Router", "TanStack Query", "Axios"],
+    "requiredInterceptors": [
+      "Attach Bearer token on each request",
+      "On 401 refresh token and replay failed request"
+    ],
+    "minimumComponents": [
+      "AuthProvider",
+      "RoleGuard",
+      "DashboardCards",
+      "PlanForm",
+      "AssignmentTable",
+      "ProgressEditor",
+      "InsightsPanel"
+    ]
+  }
+}

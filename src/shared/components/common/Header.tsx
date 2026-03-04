@@ -39,6 +39,8 @@ export function Header({ navigation }: HeaderProps) {
 
   if (!user) return null;
 
+  const displayName = `${user.first_name} ${user.last_name}`.trim() || user.username;
+
   return (
     <header className="flex items-center justify-between border-b border-border bg-card/60 backdrop-blur px-6 py-4 w-full">
       {/* Active Page Title - Left Side */}
@@ -64,16 +66,16 @@ export function Header({ navigation }: HeaderProps) {
         </button>
 
         <div className="text-right">
-          <div className="text-sm font-semibold">{user.name}</div>
+          <div className="text-sm font-semibold">{displayName}</div>
           <div className="text-xs text-muted-foreground">
-            {user.title && <span>{user.title}</span>}
-            {user.title && user.region && <span className="mx-1">•</span>}
-            {user.region && <span>{user.region}</span>}
+            <span>{user.role}</span>
+            <span className="mx-1">•</span>
+            <span>{user.email}</span>
           </div>
         </div>
 
         <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold uppercase">
-          {user.name
+          {displayName
             .split(" ")
             .filter(Boolean)
             .slice(0, 2)
