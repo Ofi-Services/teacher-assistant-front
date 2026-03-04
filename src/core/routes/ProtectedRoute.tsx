@@ -35,12 +35,11 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   if (!allowedRoles.includes(user.role)) {
     // Redirect to appropriate page based on user role
     const redirectPaths: Record<string, string> = {
-      consultant: "/courses",
-      leader: "/dashboard",
-      superuser: "/superuser/dashboard",
+      director: "/director/dashboard",
+      teacher: "/teacher/dashboard",
     }
     
-    return <Navigate to={redirectPaths[user.role] || "/courses"} replace />
+    return <Navigate to={redirectPaths[user.role] || "/login"} replace />
   }
 
   return <>{children}</>

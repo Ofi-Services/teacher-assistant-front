@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "Teacher Assistant Backend API",
+    "description": "Colección completa para consumir el backend MVP de planes de entrenamiento docente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "teacher-assistant-backend-mvp"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "directorToken", "value": "" },
+    { "key": "teacherToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "planId", "value": "1" },
+    { "key": "teacherId", "value": "2" },
+    { "key": "assignmentId", "value": "1" },
+    { "key": "moduleId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "0. Bootstrap",
+      "item": [
+        {
+          "name": "Health - OpenAPI Schema",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/schema/"
+          }
+        },
+        {
+          "name": "Seed demo data",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/docs/"
+          },
+          "description": "Ejecuta primero en terminal: .\\venv\\Scripts\\python.exe manage.py seed_mvp"
+        }
+      ]
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login Director",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"director1\",\n  \"password\": \"Pass1234!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/token/"
+          }
+        },
+        {
+          "name": "Login Teacher",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"teacher1\",\n  \"password\": \"Pass1234!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/token/"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/token/refresh/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Accounts",
+      "item": [
+        {
+          "name": "Profile Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/accounts/profile/me/"
+          }
+        },
+        {
+          "name": "Create Teacher (director only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{directorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"teacher3\",\n  \"first_name\": \"Laura\",\n  \"last_name\": \"Diaz\",\n  \"email\": \"teacher3@example.com\",\n  \"role\": \"teacher\",\n  \"password\": \"Pass1234!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/accounts/users/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Training Plans",
+      "item": [
+        {
+          "name": "List Plans (director or teacher assigned)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/training/plans/"
+          }
+        },
+        {
+          "name": "Create Plan (director)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{directorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Plan Intensivo de Evaluación Formativa\",\n  \"description\": \"Plan para fortalecer prácticas de evaluación continua.\",\n  \"objectives\": \"Diseñar rúbricas, retroalimentar oportunamente y cerrar brechas.\",\n  \"duration_weeks\": 4,\n  \"modules\": [\n    {\n      \"title\": \"Diagnóstico inicial\",\n      \"description\": \"Línea base\",\n      \"order\": 1,\n      \"expected_days\": 5\n    },\n    {\n      \"title\": \"Diseño de rúbricas\",\n      \"description\": \"Rúbricas por competencia\",\n      \"order\": 2,\n      \"expected_days\": 7\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/training/plans/"
+          }
+        },
+        {
+          "name": "Update Plan (director)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{directorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duration_weeks\": 6\n}"
+            },
+            "url": "{{baseUrl}}/api/training/plans/{{planId}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Assignments & Progress",
+      "item": [
+        {
+          "name": "Create Assignment (director)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{directorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": {{planId}},\n  \"teacher\": {{teacherId}},\n  \"due_date\": \"2026-04-30\"\n}"
+            },
+            "url": "{{baseUrl}}/api/assignments/"
+          }
+        },
+        {
+          "name": "List Assignments (director)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/assignments/"
+          }
+        },
+        {
+          "name": "My Assignments (teacher)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/api/assignments/me/"
+          }
+        },
+        {
+          "name": "Update Progress (teacher or director)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": {{moduleId}},\n  \"percent_completed\": 65,\n  \"notes\": \"Implementé estrategia en 2 clases.\",\n  \"evidence_url\": \"https://example.com/evidence/lesson-1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/assignments/{{assignmentId}}/progress/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Dashboards",
+      "item": [
+        {
+          "name": "Director Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/assignments/dashboard/director/"
+          }
+        },
+        {
+          "name": "Teacher Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/api/assignments/dashboard/me/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. AI Insights",
+      "item": [
+        {
+          "name": "Generate Insights for Assignment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/insights/alerts/generate/{{assignmentId}}/"
+          }
+        },
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/insights/alerts/?assignment={{assignmentId}}"
+          }
+        },
+        {
+          "name": "List Recommendations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{directorToken}}" }],
+            "url": "{{baseUrl}}/api/insights/recommendations/?assignment={{assignmentId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

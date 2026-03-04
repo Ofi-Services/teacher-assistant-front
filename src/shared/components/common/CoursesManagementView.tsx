@@ -272,7 +272,7 @@ export default function CoursesManagementView() {
     const sessionId = Date.now()
 
     typingSessionRef.current = sessionId
-    setSubmitMessage("Sofia está escribiendo en el formulario...")
+    setSubmitMessage("Anita está escribiendo en el formulario...")
     createSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
 
     setFormData((previous) => ({
