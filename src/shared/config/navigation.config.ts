@@ -21,7 +21,7 @@ export const DIRECTOR_NAV: NavSection[] = [
       { label: "Planes", icon: BookOpen, path: "/director/plans" },
       { label: "Asignaciones", icon: ClipboardList, path: "/director/assignments" },
       { label: "Alertas", icon: Bell, path: "/director/alerts" },
-      { label: "Chatbot", icon: MessageSquare, path: "/chatbot" },
+      { label: "Interactuar", icon: MessageSquare, path: "/chatbot" },
     ],
   },
 ]
@@ -33,7 +33,7 @@ export const TEACHER_NAV: NavSection[] = [
       { label: "Dashboard", icon: Home, path: "/teacher/dashboard", active: true },
       { label: "Gestión de cursos", icon: BookOpen, path: "/courses" },
       { label: "Mis planes", icon: BookOpen, path: "/teacher/plans" },
-      { label: "Chatbot", icon: MessageSquare, path: "/chatbot" },
+      { label: "Interactuar", icon: MessageSquare, path: "/chatbot" },
     ],
   },
 ]

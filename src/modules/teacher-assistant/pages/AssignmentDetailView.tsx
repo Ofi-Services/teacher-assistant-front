@@ -82,6 +82,31 @@ export default function AssignmentDetailView() {
     return "Pendiente"
   }
 
+  const calculatedTotalProgress = useMemo(() => {
+    if (!assignment || !plan || plan.modules.length === 0) {
+      return assignment?.progress_percentage ?? 0
+    }
+
+    const latestProgressByModule = new Map<number, number>()
+
+    assignment.progress_records?.forEach((record) => {
+      const currentValue = latestProgressByModule.get(record.module)
+      if (currentValue === undefined || record.percent_completed > currentValue) {
+        latestProgressByModule.set(record.module, record.percent_completed)
+      }
+    })
+
+    const totalPercent = plan.modules.reduce((accumulator, module) => {
+      if (!module.id) {
+        return accumulator
+      }
+
+      return accumulator + (latestProgressByModule.get(module.id) ?? 0)
+    }, 0)
+
+    return Number((totalPercent / plan.modules.length).toFixed(1))
+  }, [assignment, plan])
+
   const completeModule = async (moduleId?: number) => {
     if (!moduleId || assignmentId <= 0) {
       return
@@ -135,9 +160,9 @@ export default function AssignmentDetailView() {
               <div>
                 <div className="flex justify-between mb-1">
                   <span>Progreso total</span>
-                  <span>{assignment.progress_percentage}%</span>
+                  <span>{calculatedTotalProgress}%</span>
                 </div>
-                <Progress value={assignment.progress_percentage} />
+                <Progress value={calculatedTotalProgress} />
               </div>
               <p>Última actividad: {assignment.last_activity_at ?? "Sin actividad"}</p>
             </div>

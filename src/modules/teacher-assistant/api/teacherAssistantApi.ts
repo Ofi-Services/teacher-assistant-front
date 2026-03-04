@@ -142,7 +142,7 @@ export const teacherAssistantApi = {
   getPlan: (planId: number) =>
     request<TrainingPlan>(`/api/training/plans/${planId}/`, "GET"),
 
-  listPlans: (query?: { search?: string; ordering?: string; created_by?: number; page?: number }) =>
+  listPlans: (query?: { search?: string; ordering?: string; created_by?: number; page?: number; page_size?: number }) =>
     request<PaginatedResponse<TrainingPlan>>("/api/training/plans/", "GET", { query }),
 
   createPlan: (payload: {
@@ -173,7 +173,7 @@ export const teacherAssistantApi = {
   createAssignment: (payload: { plan: number; teacher: number; due_date: string }) =>
     request<PlanAssignment>("/api/assignments/", "POST", { body: payload }),
 
-  getMyAssignments: (query?: { page?: number }) =>
+  getMyAssignments: (query?: { page?: number; page_size?: number }) =>
     request<PaginatedResponse<PlanAssignment>>("/api/assignments/me/", "GET", { query }),
 
   updateProgress: (

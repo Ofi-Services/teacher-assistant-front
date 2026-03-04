@@ -51,9 +51,9 @@ export default function DirectorDashboardView() {
     })
 
     return [
-      { statusKey: "assigned", status: "Asignadas", count: statusTotals.assigned, fill: "var(--color-muted-foreground)" },
-      { statusKey: "in_progress", status: "En progreso", count: statusTotals.in_progress, fill: "var(--color-secondary)" },
-      { statusKey: "completed", status: "Completadas", count: statusTotals.completed, fill: "var(--color-primary)" },
+      { statusKey: "assigned", status: "Asignadas", count: statusTotals.assigned, fill: "var(--color-assigned)" },
+      { statusKey: "in_progress", status: "En progreso", count: statusTotals.in_progress, fill: "var(--color-in_progress)" },
+      { statusKey: "completed", status: "Completadas", count: statusTotals.completed, fill: "var(--color-completed)" },
     ]
   }, [dashboard])
 
@@ -89,40 +89,40 @@ export default function DirectorDashboardView() {
   const progressChartConfig = {
     progress: {
       label: "Progreso promedio",
-      color: "var(--color-primary)",
+      color: "#FBBF24",
     },
   } satisfies ChartConfig
 
   const planProgressChartConfig = {
     avgProgress: {
       label: "Progreso promedio del plan",
-      color: "var(--color-primary)",
+      color: "#FBBF24",
     },
   } satisfies ChartConfig
 
   const workloadChartConfig = {
     assignments: {
       label: "Asignaciones",
-      color: "var(--color-secondary)",
+      color: "#FBBF24",
     },
     alerts: {
       label: "Alertas activas",
-      color: "var(--color-destructive)",
+      color: "#D97706",
     },
   } satisfies ChartConfig
 
   const statusChartConfig = {
     assigned: {
       label: "Asignadas",
-      color: "var(--color-muted-foreground)",
+      color: "#334155",
     },
     in_progress: {
       label: "En progreso",
-      color: "var(--color-secondary)",
+      color: "#FCD34D",
     },
     completed: {
       label: "Completadas",
-      color: "var(--color-primary)",
+      color: "#D97706",
     },
   } satisfies ChartConfig
 
@@ -200,7 +200,7 @@ export default function DirectorDashboardView() {
                   <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="progress" radius={4} fill="var(--color-progress)" />
+                  <Bar dataKey="progress" radius={4} fill="var(--color-progress)" stroke="#D97706" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -248,8 +248,8 @@ export default function DirectorDashboardView() {
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" />
-                  <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" />
+                  <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" stroke="#D97706" strokeWidth={1} />
+                  <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" stroke="#B45309" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -270,7 +270,7 @@ export default function DirectorDashboardView() {
                   <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" />
+                  <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" stroke="#D97706" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}

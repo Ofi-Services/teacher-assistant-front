@@ -6,6 +6,7 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/types"
 
 export default function TeacherPlanListView() {
+  const PAGE_SIZE = 8
   const [response, setResponse] = useState<PaginatedResponse<PlanAssignment> | null>(null)
   const [planTitles, setPlanTitles] = useState<Record<number, string>>({})
   const [page, setPage] = useState(1)
@@ -26,7 +27,7 @@ export default function TeacherPlanListView() {
     try {
       setLoading(true)
       setError("")
-      const data = await teacherAssistantApi.getMyAssignments({ page })
+      const data = await teacherAssistantApi.getMyAssignments({ page, page_size: PAGE_SIZE })
       setResponse(data)
 
       const plansResponse = await teacherAssistantApi.listPlans({ page: 1 })

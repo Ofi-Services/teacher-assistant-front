@@ -7,6 +7,7 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 import { PaginatedResponse, TrainingPlan } from "@/modules/teacher-assistant/types"
 
 export default function PlanListView() {
+  const PAGE_SIZE = 8
   const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -18,7 +19,7 @@ export default function PlanListView() {
     try {
       setLoading(true)
       setError("")
-      const data = await teacherAssistantApi.listPlans({ search, page })
+      const data = await teacherAssistantApi.listPlans({ search, page, page_size: PAGE_SIZE })
       setResponse(data)
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudo listar planes")
@@ -49,7 +50,18 @@ export default function PlanListView() {
         </CardHeader>
         <CardContent className="flex gap-2">
           <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar" />
-          <Button onClick={() => void loadPlans()}>Buscar</Button>
+          <Button
+            onClick={() => {
+              if (page !== 1) {
+                setPage(1)
+                return
+              }
+
+              void loadPlans()
+            }}
+          >
+            Buscar
+          </Button>
         </CardContent>
       </Card>
 
