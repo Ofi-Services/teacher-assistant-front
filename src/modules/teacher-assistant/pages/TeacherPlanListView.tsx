@@ -12,6 +12,10 @@ import { useToast } from "@/shared/hooks/use-toast"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
 import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/types"
 
+const TeamsLogo = () => (
+  <img src="/microsoft-teams.svg" alt="Microsoft Teams" className="h-6 w-6" />
+)
+
 export default function TeacherPlanListView() {
   const PAGE_SIZE = 8
   const { toast } = useToast()
@@ -246,8 +250,16 @@ export default function TeacherPlanListView() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Calendario de fechas límite</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={handleSyncWithTeams} disabled={isSyncingTeams || showTeamsMeetings}>
-            {isSyncingTeams ? "Sincronizando..." : showTeamsMeetings ? "Sincronizado" : "Sincronizar con Microsoft Teams"}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="bg-muted text-foreground border-border hover:bg-muted/80"
+            onClick={handleSyncWithTeams}
+            disabled={isSyncingTeams || showTeamsMeetings}
+          >
+            <TeamsLogo />
+            <span>{isSyncingTeams ? "Sincronizando..." : showTeamsMeetings ? "Sincronizado" : "Sincronizar con Microsoft Teams"}</span>
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
