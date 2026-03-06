@@ -5,6 +5,7 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 import { IntelligentAlert, PaginatedResponse } from "@/modules/teacher-assistant/types"
 
 export default function AlertsRecommendationsView() {
+  const EXTRA_ALERTS_COUNT = 10
   const [severity, setSeverity] = useState("")
   const [alertsPage, setAlertsPage] = useState(1)
   const [alerts, setAlerts] = useState<PaginatedResponse<IntelligentAlert> | null>(null)
@@ -23,12 +24,68 @@ export default function AlertsRecommendationsView() {
     return "Alta"
   }
 
+  const generateExtraAlerts = (filterSeverity: string) => {
+    const severities: Array<IntelligentAlert["severity"]> = ["low", "medium", "high"]
+    const teacherNames = [
+      "Laura Martínez",
+      "Carlos Gómez",
+      "Ana Rodríguez",
+      "Javier Torres",
+      "Mariana López",
+      "Diego Fernández",
+      "Sofía Herrera",
+      "Ricardo Vega",
+      "Valentina Castro",
+      "Pablo Morales",
+    ]
+    const improvementPlans = [
+      "Plan de mejora en evaluación formativa",
+      "Plan de mejora en metodologías activas",
+      "Plan de mejora en gestión de aula",
+      "Plan de mejora en inclusión educativa",
+      "Plan de mejora en aprendizaje basado en proyectos",
+      "Plan de mejora en retroalimentación efectiva",
+      "Plan de mejora en integración de TIC",
+      "Plan de mejora en seguimiento académico",
+      "Plan de mejora en diseño instruccional",
+      "Plan de mejora en innovación pedagógica",
+    ]
+
+    const generatedAlerts: IntelligentAlert[] = Array.from({ length: EXTRA_ALERTS_COUNT }, (_, index) => {
+      const severityValue = severities[index % severities.length]
+      const teacherName = teacherNames[index % teacherNames.length]
+      const planName = improvementPlans[index % improvementPlans.length]
+
+      return {
+        id: -(alertsPage * 100 + index + 1),
+        title: `Seguimiento requerido - ${teacherName}`,
+        message: `Se detectó una posible desviación en el avance del ${planName}.`,
+        severity: severityValue,
+        is_resolved: false,
+        teacher_name: teacherName,
+        plan_name: planName,
+        created_at: new Date().toISOString(),
+      }
+    })
+
+    if (!filterSeverity) {
+      return generatedAlerts
+    }
+
+    return generatedAlerts.filter((alert) => alert.severity === filterSeverity)
+  }
+
   const loadData = async () => {
     try {
       setLoading(true)
       setError("")
       const alertsData = await teacherAssistantApi.listAlerts({ severity: severity || undefined, page: alertsPage })
-      setAlerts(alertsData)
+      const extraAlerts = generateExtraAlerts(severity)
+      setAlerts({
+        ...alertsData,
+        count: alertsData.count + extraAlerts.length,
+        results: [...alertsData.results, ...extraAlerts],
+      })
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudo cargar análisis")
     } finally {
@@ -41,6 +98,14 @@ export default function AlertsRecommendationsView() {
   }, [alertsPage])
 
   const sendAlertNotification = async (alertId: number) => {
+    if (alertId < 0) {
+      setAlertNotificationMessages((prev) => ({
+        ...prev,
+        [alertId]: "Alerta demo: no se envía notificación al backend.",
+      }))
+      return
+    }
+
     try {
       setSendingAlertId(alertId)
       setAlertNotificationMessages((prev) => ({ ...prev, [alertId]: "" }))
