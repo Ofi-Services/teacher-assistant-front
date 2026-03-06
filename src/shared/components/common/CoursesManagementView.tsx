@@ -369,7 +369,7 @@ export default function CoursesManagementView() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Cursos disponibles (mock)</CardTitle>
+            <CardTitle>Cursos disponibles </CardTitle>
             <CardDescription>{MOCK_COURSES.length} cursos con información completa para pruebas visuales.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
