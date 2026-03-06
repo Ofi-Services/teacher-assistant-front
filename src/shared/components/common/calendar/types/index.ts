@@ -13,6 +13,7 @@ export interface TrainingTrack {
   link?: string | null;
   category: string | null;
   due_date: string | null; // ISO date string (YYYY-MM-DD)
+  due_time?: string | null; // Time string (HH:mm)
   completion_date?: string | null; // ISO date string (YYYY-MM-DD)
   total_courses: number;
   completed_courses: number;

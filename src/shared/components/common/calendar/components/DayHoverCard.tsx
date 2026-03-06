@@ -7,6 +7,7 @@ import {
   Circle,
   AlertCircle,
   Calendar,
+  Clock3,
   BookOpen,
 } from "lucide-react";
 import { cn } from '@/shared/lib/utils';
@@ -158,6 +159,13 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
         return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       }
 
+      if (a.due_time && b.due_time) {
+        return a.due_time.localeCompare(b.due_time);
+      }
+
+      if (a.due_time && !b.due_time) return -1;
+      if (!a.due_time && b.due_time) return 1;
+
       return 0;
     })
     : [];
@@ -295,7 +303,18 @@ export const DayHoverCard: React.FC<DayHoverCardProps> = ({
                                   : "text-muted-foreground"
                               )}
                             >
-                              {formatDueDateRelative(track.due_date)}
+                              {track.due_date}
+                              {track.due_time ? ` · ${track.due_time}` : ''}
+                              {` (${formatDueDateRelative(track.due_date)})`}
+                            </span>
+                          </div>
+                        )}
+
+                        {!track.due_date && track.due_time && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock3 className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">
+                              {track.due_time}
                             </span>
                           </div>
                         )}

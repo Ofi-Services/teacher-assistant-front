@@ -130,6 +130,60 @@ export default function TeacherPlanListView() {
       .filter((event): event is EventInput => event !== null)
   }, [assignmentsWithDueDate, planTitles])
 
+  const teamsMeetingMockEvents = useMemo(() => {
+    const year = 2026
+    const month = 3
+    const meetingTimes = [
+      "08:30",
+      "09:00",
+      "09:30",
+      "10:00",
+      "10:30",
+      "11:00",
+      "11:30",
+      "14:00",
+      "14:30",
+      "15:00",
+    ]
+
+    const topics = [
+      "Weekly Planning",
+      "Sprint Sync",
+      "Department Update",
+      "Project Kickoff",
+      "Stakeholder Review",
+      "Progress Check-in",
+      "Roadmap Alignment",
+      "Curriculum Coordination",
+      "Teacher Follow-up",
+      "Academic Committee",
+    ]
+
+    return Array.from({ length: 20 }, (_, index) => {
+      const day = ((index * 2) % 31) + 1
+      const time = meetingTimes[index % meetingTimes.length]
+      const [hours, minutes] = time.split(":").map(Number)
+      const start = new Date(year, month - 1, day, hours, minutes, 0)
+      const title = `Teams Meeting - ${topics[index % topics.length]} ${index + 1}`
+
+      const event: EventInput = {
+        id: `teams-meeting-${index + 1}`,
+        title,
+        start,
+        allDay: false,
+        extendedProps: {
+          category: "Teams Meeting",
+        },
+      }
+
+      return event
+    })
+  }, [])
+
+  const calendarEvents = useMemo(() => {
+    return [...deadlineEvents, ...teamsMeetingMockEvents]
+  }, [deadlineEvents, teamsMeetingMockEvents])
+
   const selectedDateAssignments = useMemo(() => {
     if (!selectedDeadlineDate) {
       return []
@@ -185,9 +239,12 @@ export default function TeacherPlanListView() {
                 right: "",
               }}
               height="auto"
-              events={deadlineEvents}
+              events={calendarEvents}
               eventClick={(info) => {
-                const dateKey = info.event.startStr
+                const eventStart = info.event.start
+                const dateKey = eventStart
+                  ? `${eventStart.getFullYear()}-${String(eventStart.getMonth() + 1).padStart(2, "0")}-${String(eventStart.getDate()).padStart(2, "0")}`
+                  : info.event.startStr.split("T")[0]
                 setSelectedDateFromDateKey(dateKey)
               }}
               dateClick={(info) => {

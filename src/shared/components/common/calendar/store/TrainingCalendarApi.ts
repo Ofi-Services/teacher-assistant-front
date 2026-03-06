@@ -17,8 +17,76 @@ interface MockTrainingTrack extends TrainingTrack {
   userId?: string;
 }
 
+const filterTracksByUser = (
+  tracks: MockTrainingTrack[],
+  userId?: string
+): MockTrainingTrack[] => {
+  if (!userId) {
+    return tracks;
+  }
+
+  const normalizedUserId = String(userId);
+  const exactMatches = tracks.filter((track) => String(track.userId) === normalizedUserId);
+
+  return exactMatches.length > 0 ? exactMatches : tracks;
+};
+
 const wait = (ms = 200) => new Promise((resolve) => setTimeout(resolve, ms));
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+const toISODate = (date: Date): string => date.toISOString().split('T')[0];
+
+const createTeamsMeetingMockEvents = (count = 20): MockTrainingTrack[] => {
+  const year = 2026;
+  const month = 2; // March (0-indexed)
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const meetingTimes = [
+    '08:30',
+    '09:00',
+    '09:30',
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '14:00',
+    '14:30',
+    '15:00',
+  ];
+
+  const meetingTopics = [
+    'Weekly Planning',
+    'Sprint Sync',
+    'Department Update',
+    'Project Kickoff',
+    'Stakeholder Review',
+    'Progress Check-in',
+    'Roadmap Alignment',
+    'Curriculum Coordination',
+    'Teacher Follow-up',
+    'Academic Committee',
+  ];
+
+  return Array.from({ length: count }, (_, index) => {
+    const day = ((index * 2) % daysInMonth) + 1;
+    const meetingDate = new Date(year, month, day);
+    const due_time = meetingTimes[index % meetingTimes.length];
+    const topic = meetingTopics[index % meetingTopics.length];
+
+    return {
+      id: 600 + index,
+      userId: 'mock-user-1',
+      title: `Teams Meeting - ${topic} ${index + 1}`,
+      platform: 'Microsoft Teams',
+      category: 'Teams Meeting',
+      due_date: toISODate(meetingDate),
+      due_time,
+      completion_date: null,
+      total_courses: 1,
+      completed_courses: 0,
+      link: `https://mock.local/meetings/${600 + index}`,
+    };
+  });
+};
 
 let mockCalendarTracks: MockTrainingTrack[] = [
   {
@@ -69,6 +137,7 @@ let mockCalendarTracks: MockTrainingTrack[] = [
     completed_courses: 1,
     link: 'https://mock.local/tracks/504',
   },
+  ...createTeamsMeetingMockEvents(20),
 ];
 
 /**
@@ -212,8 +281,7 @@ export const trainingCalendarApi = createApi({
         const currentDate = new Date();
         const year = arg.year ?? currentDate.getFullYear();
         const month = arg.month ?? currentDate.getMonth();
-        const filteredTracks = mockCalendarTracks
-          .filter((track) => !arg.userId || track.userId === arg.userId)
+        const filteredTracks = filterTracksByUser(mockCalendarTracks, arg.userId)
           .map(({ userId: _userId, ...track }) => track);
 
         return { data: transformTracksToMonthSummary(clone(filteredTracks), year, month) };
@@ -229,8 +297,7 @@ export const trainingCalendarApi = createApi({
     getAllTracks: builder.query<TrainingTrack[], { userId?: string }>({
       queryFn: async ({ userId }) => {
         await wait(150);
-        const tracks = mockCalendarTracks
-          .filter((track) => !userId || track.userId === userId)
+        const tracks = filterTracksByUser(mockCalendarTracks, userId)
           .map(({ userId: _userId, ...track }) => track);
 
         return { data: clone(tracks) };
