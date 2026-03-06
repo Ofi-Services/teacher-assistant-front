@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
@@ -21,6 +21,9 @@ export default function TeacherPlanListView() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [showTeamsMeetings, setShowTeamsMeetings] = useState(false)
+  const [isSyncingTeams, setIsSyncingTeams] = useState(false)
+  const teamsSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const toDateKey = (dateValue: Date) => {
     const year = dateValue.getFullYear()
@@ -106,6 +109,15 @@ export default function TeacherPlanListView() {
     void loadAssignments()
   }, [page])
 
+  useEffect(() => {
+    return () => {
+      if (teamsSyncTimeoutRef.current) {
+        clearTimeout(teamsSyncTimeoutRef.current)
+        teamsSyncTimeoutRef.current = null
+      }
+    }
+  }, [])
+
   const assignmentsWithDueDate = useMemo(() => {
     return (response?.results ?? []).filter((assignment) => !!getDueDateKey(assignment))
   }, [response])
@@ -181,8 +193,8 @@ export default function TeacherPlanListView() {
   }, [])
 
   const calendarEvents = useMemo(() => {
-    return [...deadlineEvents, ...teamsMeetingMockEvents]
-  }, [deadlineEvents, teamsMeetingMockEvents])
+    return [...deadlineEvents, ...(showTeamsMeetings ? teamsMeetingMockEvents : [])]
+  }, [deadlineEvents, showTeamsMeetings, teamsMeetingMockEvents])
 
   const selectedDateAssignments = useMemo(() => {
     if (!selectedDeadlineDate) {
@@ -203,10 +215,21 @@ export default function TeacherPlanListView() {
   }
 
   const handleSyncWithTeams = () => {
-    toast({
-      title: "Sincronización completada",
-      description: "Tu calendaro ha sido sincronizado",
-    })
+    if (isSyncingTeams || showTeamsMeetings) {
+      return
+    }
+
+    setIsSyncingTeams(true)
+    teamsSyncTimeoutRef.current = setTimeout(() => {
+      setShowTeamsMeetings(true)
+      setIsSyncingTeams(false)
+      teamsSyncTimeoutRef.current = null
+
+      toast({
+        title: "Sincronización completada",
+        description: "Tu calendaro ha sido sincronizado",
+      })
+    }, 500)
   }
 
   return (
@@ -223,8 +246,8 @@ export default function TeacherPlanListView() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Calendario de fechas límite</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={handleSyncWithTeams}>
-            Sincronizar con Microsoft Teams
+          <Button type="button" variant="outline" size="sm" onClick={handleSyncWithTeams} disabled={isSyncingTeams || showTeamsMeetings}>
+            {isSyncingTeams ? "Sincronizando..." : showTeamsMeetings ? "Sincronizado" : "Sincronizar con Microsoft Teams"}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
