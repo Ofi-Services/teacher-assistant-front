@@ -251,7 +251,7 @@ export default function TeacherPlanListView() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-md border border-border p-3">
+          <div className="teacher-plans-calendar rounded-md border border-border p-3">
             <FullCalendar
               plugins={[dayGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"

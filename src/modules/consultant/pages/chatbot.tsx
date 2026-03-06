@@ -762,7 +762,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
       {!isFullView && isDockVisible && conversationStatus !== 'disconnected' && (
         <div className="fixed bottom-4 right-4 z-50 w-[220px] rounded-xl border border-border bg-card shadow-lg p-3 space-y-3">
-          <div className="text-xs font-medium text-foreground">Anita en llamada</div>
+          <div className="text-xs font-medium text-foreground">Atena en llamada</div>
 
           {conversationStatus === 'connecting' ? (
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-primary" />
@@ -796,7 +796,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
           disabled={!hasAgentId}
           className="fixed bottom-4 right-4 z-50 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Llamar a Anita
+          Llamar a Atena
         </button>
       )}
 
