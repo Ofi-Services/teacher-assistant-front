@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
-import { DirectorDashboardResponse } from "@/modules/teacher-assistant/types"
+import { AssignmentStatus, DirectorDashboardResponse } from "@/modules/teacher-assistant/types"
 import {
   ChartContainer,
   ChartLegend,
@@ -14,37 +14,95 @@ import {
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from "recharts"
 
 export default function DirectorDashboardView() {
+  const MAX_PLANS_IN_CHART = 8
+  const EXTRA_TEACHER_NAMES = [
+    "Laura Martínez",
+    "Carlos Gómez",
+    "Ana Rodríguez",
+    "Javier Torres",
+    "Mariana López",
+    "Diego Fernández",
+    "Sofía Herrera",
+    "Ricardo Vega",
+    "Valentina Castro",
+    "Pablo Morales",
+  ]
   const [dashboard, setDashboard] = useState<DirectorDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
+  const teachersWithExtras = useMemo(() => {
+    const teachers = dashboard?.teachers ?? []
+    if (teachers.length === 0) {
+      return []
+    }
+
+    const maxTeacherId = teachers.reduce((currentMax, teacher) => Math.max(currentMax, teacher.teacher_id), 0)
+
+    const extraTeachers = Array.from({ length: EXTRA_TEACHER_NAMES.length }, (_, index) => {
+      const offset = index + 1
+      const teacherId = maxTeacherId + offset
+      const seed = offset * 11
+      const totalAssignments = 4 + (seed % 7)
+      const averageProgressPercentage = Number((35 + ((seed * 3) % 61)).toFixed(1))
+      const activeAlerts = seed % 4
+
+      const plans = Array.from({ length: 3 }, (_, planIndex) => {
+        const planProgress = Math.max(0, Math.min(100, averageProgressPercentage + (planIndex - 1) * 12))
+        const status: AssignmentStatus = planProgress >= 85 ? "completed" : planProgress > 35 ? "in_progress" : "assigned"
+
+        return {
+          assignment_id: teacherId * 100 + planIndex + 1,
+          plan_id: 1000 + offset * 10 + planIndex,
+          plan_title: `Plan de apoyo ${offset}-${planIndex + 1}`,
+          status,
+          progress_percentage: Number(planProgress.toFixed(1)),
+          active_alerts: Math.max(0, activeAlerts - planIndex),
+          last_activity_at: dashboard?.generated_at ?? null,
+        }
+      })
+
+      return {
+        teacher_id: teacherId,
+        teacher_name: EXTRA_TEACHER_NAMES[index],
+        total_assignments: totalAssignments,
+        average_progress_percentage: averageProgressPercentage,
+        active_alerts: activeAlerts,
+        last_activity_at: dashboard?.generated_at ?? null,
+        plans,
+      }
+    })
+
+    return [...teachers, ...extraTeachers]
+  }, [dashboard])
+
   const teacherProgressData = useMemo(
     () =>
-      dashboard?.teachers.map((teacher) => ({
+      teachersWithExtras.map((teacher) => ({
         teacher: teacher.teacher_name,
         progress: Number(teacher.average_progress_percentage.toFixed(1)),
       })) ?? [],
-    [dashboard],
+    [teachersWithExtras],
   )
 
   const teacherWorkloadData = useMemo(
     () =>
-      dashboard?.teachers.map((teacher) => ({
+      teachersWithExtras.map((teacher) => ({
         teacher: teacher.teacher_name,
         assignments: teacher.total_assignments,
         alerts: teacher.active_alerts,
       })) ?? [],
-    [dashboard],
+    [teachersWithExtras],
   )
 
   const assignmentStatusData = useMemo(() => {
-    const statusTotals = {
+    const statusTotals: Record<AssignmentStatus, number> = {
       assigned: 0,
       in_progress: 0,
       completed: 0,
     }
 
-    dashboard?.teachers.forEach((teacher) => {
+    teachersWithExtras.forEach((teacher) => {
       teacher.plans.forEach((plan) => {
         statusTotals[plan.status] += 1
       })
@@ -55,12 +113,13 @@ export default function DirectorDashboardView() {
       { statusKey: "in_progress", status: "En progreso", count: statusTotals.in_progress, fill: "var(--color-in_progress)" },
       { statusKey: "completed", status: "Completadas", count: statusTotals.completed, fill: "var(--color-completed)" },
     ]
-  }, [dashboard])
+  }, [teachersWithExtras])
 
   const planProgressData = useMemo(() => {
     const aggregateByPlan = new Map<number, { planTitle: string; totalProgress: number; count: number }>()
+    const realTeachers = dashboard?.teachers ?? []
 
-    dashboard?.teachers.forEach((teacher) => {
+    realTeachers.forEach((teacher) => {
       teacher.plans.forEach((plan) => {
         const existing = aggregateByPlan.get(plan.plan_id)
         if (existing) {
@@ -84,50 +143,51 @@ export default function DirectorDashboardView() {
         avgProgress: Number((value.totalProgress / value.count).toFixed(1)),
       }))
       .sort((left, right) => right.avgProgress - left.avgProgress)
+      .slice(0, MAX_PLANS_IN_CHART)
   }, [dashboard])
 
   const progressChartConfig = {
     progress: {
       label: "Progreso promedio",
-      color: "#FBBF24",
+      color: "#306898",
     },
   } satisfies ChartConfig
 
   const planProgressChartConfig = {
     avgProgress: {
       label: "Progreso promedio del plan",
-      color: "#FBBF24",
+      color: "#306898",
     },
   } satisfies ChartConfig
 
   const workloadChartConfig = {
     assignments: {
       label: "Asignaciones",
-      color: "#FBBF24",
+      color: "#CCA240",
     },
     alerts: {
       label: "Alertas activas",
-      color: "#D97706",
+      color: "#BD8250",
     },
   } satisfies ChartConfig
 
   const statusChartConfig = {
     assigned: {
       label: "Asignadas",
-      color: "#334155",
+      color: "#B1B2B2",
     },
     in_progress: {
       label: "En progreso",
-      color: "#FCD34D",
+      color: "#D9B96F",
     },
     completed: {
       label: "Completadas",
-      color: "#D97706",
+      color: "#306898",
     },
   } satisfies ChartConfig
 
   const kpiItems = useMemo(() => {
-    const teachers = dashboard?.teachers ?? []
+    const teachers = teachersWithExtras
     const totalTeachers = teachers.length
     const totalAssignments = teachers.reduce((acc, teacher) => acc + teacher.total_assignments, 0)
     const totalActiveAlerts = teachers.reduce((acc, teacher) => acc + teacher.active_alerts, 0)
@@ -142,7 +202,7 @@ export default function DirectorDashboardView() {
       { key: "alerts", label: "Alertas activas", value: String(totalActiveAlerts) },
       { key: "progress", label: "Progreso promedio", value: `${averageProgress}%` },
     ]
-  }, [dashboard])
+  }, [teachersWithExtras])
 
   const loadDashboard = async () => {
     try {
@@ -200,7 +260,7 @@ export default function DirectorDashboardView() {
                   <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="progress" radius={4} fill="var(--color-progress)" stroke="#D97706" strokeWidth={1} />
+                  <Bar dataKey="progress" radius={4} fill="var(--color-progress)" stroke="#262426" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -248,8 +308,8 @@ export default function DirectorDashboardView() {
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" stroke="#D97706" strokeWidth={1} />
-                  <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" stroke="#B45309" strokeWidth={1} />
+                  <Bar dataKey="assignments" radius={4} fill="var(--color-assignments)" stroke="#704843" strokeWidth={1} />
+                  <Bar dataKey="alerts" radius={4} fill="var(--color-alerts)" stroke="#704843" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -270,7 +330,7 @@ export default function DirectorDashboardView() {
                   <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" stroke="#D97706" strokeWidth={1} />
+                  <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" stroke="#262426" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -284,11 +344,11 @@ export default function DirectorDashboardView() {
         </CardHeader>
         <CardContent>
           {loading && <p className="text-sm text-muted-foreground">Cargando panel...</p>}
-          {!loading && dashboard?.teachers.length === 0 && (
+          {!loading && teachersWithExtras.length === 0 && (
             <p className="text-sm text-muted-foreground">Sin docentes con asignaciones todavía.</p>
           )}
           <div className="space-y-4">
-            {dashboard?.teachers.map((teacher) => (
+            {teachersWithExtras.map((teacher) => (
               <div key={teacher.teacher_id} className="rounded-md border border-border p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">{teacher.teacher_name}</h3>
