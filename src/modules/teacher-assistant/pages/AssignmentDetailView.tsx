@@ -21,6 +21,15 @@ export default function AssignmentDetailView() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
+  const toSafePercentage = (value: unknown) => {
+    const parsed = typeof value === "number" ? value : Number(value)
+    if (!Number.isFinite(parsed)) {
+      return 0
+    }
+
+    return Math.max(0, Math.min(100, parsed))
+  }
+
   const getAssignmentStatusLabel = (statusValue: PlanAssignment["status"]) => {
     if (statusValue === "assigned") {
       return "Asignado"
@@ -84,15 +93,16 @@ export default function AssignmentDetailView() {
 
   const calculatedTotalProgress = useMemo(() => {
     if (!assignment || !plan || plan.modules.length === 0) {
-      return assignment?.progress_percentage ?? 0
+      return toSafePercentage(assignment?.progress_percentage)
     }
 
     const latestProgressByModule = new Map<number, number>()
 
     assignment.progress_records?.forEach((record) => {
+      const safePercentCompleted = toSafePercentage(record.percent_completed)
       const currentValue = latestProgressByModule.get(record.module)
-      if (currentValue === undefined || record.percent_completed > currentValue) {
-        latestProgressByModule.set(record.module, record.percent_completed)
+      if (currentValue === undefined || safePercentCompleted > currentValue) {
+        latestProgressByModule.set(record.module, safePercentCompleted)
       }
     })
 
@@ -104,7 +114,7 @@ export default function AssignmentDetailView() {
       return accumulator + (latestProgressByModule.get(module.id) ?? 0)
     }, 0)
 
-    return Number((totalPercent / plan.modules.length).toFixed(1))
+    return toSafePercentage(Number((totalPercent / plan.modules.length).toFixed(1)))
   }, [assignment, plan])
 
   const completeModule = async (moduleId?: number) => {
@@ -185,7 +195,7 @@ export default function AssignmentDetailView() {
               .sort((left, right) => left.order - right.order)
               .map((module, index) => {
                 const moduleProgress = getModuleProgress(module.id)
-                const modulePercent = moduleProgress?.percent_completed ?? 0
+                const modulePercent = toSafePercentage(moduleProgress?.percent_completed)
                 const moduleStatus = getModuleStatus(modulePercent)
                 const isLast = index === (plan.modules.length - 1)
                 const isCompleted = modulePercent >= 100
