@@ -8,11 +8,13 @@ import type { EventInput } from "@fullcalendar/core/index.js"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
+import { useToast } from "@/shared/hooks/use-toast"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
 import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/types"
 
 export default function TeacherPlanListView() {
   const PAGE_SIZE = 8
+  const { toast } = useToast()
   const [response, setResponse] = useState<PaginatedResponse<PlanAssignment> | null>(null)
   const [planTitles, setPlanTitles] = useState<Record<number, string>>({})
   const [selectedDeadlineDate, setSelectedDeadlineDate] = useState<Date | undefined>(undefined)
@@ -146,6 +148,13 @@ export default function TeacherPlanListView() {
     setSelectedDeadlineDate(selectedDate)
   }
 
+  const handleSyncWithTeams = () => {
+    toast({
+      title: "Sincronización completada",
+      description: "Tu calendaro ha sido sincronizado",
+    })
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -158,8 +167,11 @@ export default function TeacherPlanListView() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Calendario de fechas límite</CardTitle>
+          <Button type="button" variant="outline" size="sm" onClick={handleSyncWithTeams}>
+            Sincronizar con Microsoft Teams
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-md border border-border p-3">
