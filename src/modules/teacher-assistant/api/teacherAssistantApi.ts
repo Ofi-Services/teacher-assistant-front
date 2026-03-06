@@ -30,8 +30,9 @@ class ApiHttpError extends Error {
 }
 
 const buildUrl = (path: string, query?: Record<string, string | number | boolean | undefined>) => {
+  const normalizedBaseUrl = API_BASE_URL.endsWith("/") ? API_BASE_URL.slice(0, -1) : API_BASE_URL
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
-  const url = new URL(`${API_BASE_URL}${normalizedPath}`)
+  const url = new URL(`${normalizedBaseUrl}${normalizedPath}`)
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -103,14 +104,15 @@ async function request<T>(
   const { body, auth = true, query, retried = false } = options ?? {}
   const token = getAccessToken()
   const isFormDataBody = body instanceof FormData
+  const hasJsonBody = body !== undefined && body !== null && !isFormDataBody
 
   const response = await fetch(buildUrl(path, query), {
     method,
     headers: {
-      ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
+      ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
       ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: body ? (isFormDataBody ? body : JSON.stringify(body)) : undefined,
+    body: body !== undefined && body !== null ? (isFormDataBody ? body : JSON.stringify(body)) : undefined,
   })
 
   if (response.status === 401 && auth && !retried) {
@@ -226,8 +228,33 @@ export const teacherAssistantApi = {
   listAlerts: (query?: { severity?: string; is_resolved?: boolean; assignment?: number; page?: number }) =>
     request<PaginatedResponse<IntelligentAlert>>("/api/insights/alerts/", "GET", { query }),
 
-  sendAlertToSlack: (alertId: number) =>
-    request<null>(`/api/insights/alerts/${alertId}/send-slack/`, "POST"),
+  sendAlertToSlack: async (alertId: number) => {
+    const candidates = [
+      `/api/insights/alerts/${alertId}/send-slack/`,
+      `/api/insights/alerts/${alertId}/send_slack/`,
+      `/api/insights/alerts/send-slack/${alertId}/`,
+      `/api/insights/alerts/${alertId}/notify-slack/`,
+    ]
+
+    let lastError: unknown = null
+
+    for (const path of candidates) {
+      try {
+        return await request<null>(path, "POST")
+      } catch (requestError) {
+        if (requestError instanceof ApiHttpError && requestError.status === 404) {
+          lastError = requestError
+          continue
+        }
+
+        throw requestError
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new ApiHttpError("No se encontró endpoint de Slack en el backend", 404, null)
+  },
 
   listRecommendations: (query?: { assignment?: number; page?: number }) =>
     request<PaginatedResponse<AIRecommendation>>("/api/insights/recommendations/", "GET", { query }),

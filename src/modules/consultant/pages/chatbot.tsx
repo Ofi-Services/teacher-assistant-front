@@ -87,8 +87,10 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const happyStateTimeoutRef = useRef<number | null>(null);
   const happyEmoticonTimeoutRef = useRef<number | null>(null);
+  const previousUserKeyRef = useRef<string | null>(null);
   const isFullView = location.pathname === '/chatbot';
   const isElevenLabsDebugEnabled = import.meta.env.VITE_DEBUG_ELEVENLABS === 'true';
+  const currentUserKey = user ? `${user.id}-${user.email}` : 'anonymous';
 
   const logElevenLabsDebug = useCallback((...args: unknown[]) => {
     if (!isElevenLabsDebugEnabled) return;
@@ -611,6 +613,28 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
     await endSession();
     setIsDockVisible(false);
   }, [endSession, logElevenLabsDebug]);
+
+  useEffect(() => {
+    const previousUserKey = previousUserKeyRef.current;
+
+    if (previousUserKey !== null && previousUserKey !== currentUserKey) {
+      setChatMessages([]);
+      setMessageInput('');
+      setIsModalOpen(false);
+      setSelectedAgent(null);
+      setIsDockVisible(false);
+      setMouthOpen(0);
+      setIsAvatarHappy(false);
+      setShowHappyEmoticon(false);
+      setCurrentMoodEmoticon(DEFAULT_MOOD_EMOTICON);
+
+      if (conversationStatus !== 'disconnected') {
+        void endSession();
+      }
+    }
+
+    previousUserKeyRef.current = currentUserKey;
+  }, [conversationStatus, currentUserKey, endSession]);
 
   const handleSendMessage = useCallback(async () => {
     const text = messageInput.trim();

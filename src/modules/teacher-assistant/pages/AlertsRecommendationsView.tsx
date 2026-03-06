@@ -50,9 +50,16 @@ export default function AlertsRecommendationsView() {
         [alertId]: "Notificación enviada a Slack",
       }))
     } catch (requestError) {
+      const isSlackEndpointMissing =
+        requestError instanceof teacherAssistantApi.ApiHttpError && requestError.status === 404
+
       setAlertNotificationMessages((prev) => ({
         ...prev,
-        [alertId]: requestError instanceof Error ? requestError.message : "No se pudo enviar la notificación",
+        [alertId]: isSlackEndpointMissing
+          ? "No se encontró el endpoint de Slack en backend. Revisa la configuración/API del servidor."
+          : requestError instanceof Error
+            ? requestError.message
+            : "No se pudo enviar la notificación",
       }))
     } finally {
       setSendingAlertId(null)
