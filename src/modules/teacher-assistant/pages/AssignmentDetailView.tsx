@@ -274,13 +274,16 @@ export default function AssignmentDetailView() {
                         <p className="text-sm mt-3">
                           <span className="font-medium">Evidencia de finalización:</span>{" "}
                           {shouldShowInlineDirectorEvidence ? (
-                            <button
-                              type="button"
+                            <a
+                              href="#"
                               className="text-primary underline underline-offset-2 break-all"
-                              onClick={() => setExpandedEvidenceModuleId((previous) => (previous === module.id ? null : module.id ?? null))}
+                              onClick={(event) => {
+                                event.preventDefault()
+                                setExpandedEvidenceModuleId((previous) => (previous === module.id ? null : module.id ?? null))
+                              }}
                             >
                               Ver evidencia
-                            </button>
+                            </a>
                           ) : (
                             <a
                               href={moduleEvidenceUrl}
