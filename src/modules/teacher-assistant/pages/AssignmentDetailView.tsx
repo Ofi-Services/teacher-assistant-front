@@ -9,6 +9,11 @@ import { useAuth } from "@/shared/hooks/use-auth"
 import { cn } from "@/shared/lib/utils"
 
 export default function AssignmentDetailView() {
+  const TARGET_ASSIGNMENT_ID_FOR_INLINE_EVIDENCE = 9
+  const INLINE_EVIDENCE_BY_MODULE_ORDER: Record<number, string> = {
+    1: "/proof1.png",
+    2: "/proof%20practicas%20de%20assesment.png",
+  }
   const { id } = useParams()
   const assignmentId = useMemo(() => Number(id ?? "0"), [id])
   const { user } = useAuth()
@@ -20,6 +25,9 @@ export default function AssignmentDetailView() {
   const [moduleEvidenceFiles, setModuleEvidenceFiles] = useState<Record<number, File | null>>({})
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const isTeacherView = user?.role === "teacher"
+  const canViewInlineEvidence = user?.role === "director" || user?.role === "teacher"
+  const [expandedEvidenceModuleId, setExpandedEvidenceModuleId] = useState<number | null>(null)
 
   const toSafePercentage = (value: unknown) => {
     const parsed = typeof value === "number" ? value : Number(value)
@@ -199,6 +207,13 @@ export default function AssignmentDetailView() {
                 const moduleStatus = getModuleStatus(modulePercent)
                 const isLast = index === (plan.modules.length - 1)
                 const isCompleted = modulePercent >= 100
+                const moduleEvidenceUrl = moduleProgress?.evidence_url?.trim()
+                const inlineEvidenceImage = INLINE_EVIDENCE_BY_MODULE_ORDER[module.order]
+                const shouldShowInlineDirectorEvidence =
+                  canViewInlineEvidence
+                  && assignmentId === TARGET_ASSIGNMENT_ID_FOR_INLINE_EVIDENCE
+                  && Boolean(inlineEvidenceImage)
+                  && Boolean(moduleEvidenceUrl)
 
                 return (
                   <div key={`${module.title}-${module.order}-${index}`} className="relative pl-10 pb-4">
@@ -255,44 +270,78 @@ export default function AssignmentDetailView() {
                         </p>
                       )}
 
-                      <div className="mt-3 space-y-1">
-                        <label className="text-sm font-medium" htmlFor={`evidence-file-${module.id ?? index}`}>
-                          Evidencia de finalización
-                        </label>
-                        <input
-                          id={`evidence-file-${module.id ?? index}`}
-                          type="file"
-                          className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1 file:text-sm"
-                          onChange={(event) => {
-                            const selectedFile = event.target.files?.[0] ?? null
-                            const targetModuleId = module.id
-                            if (!targetModuleId) {
-                              return
-                            }
+                      {moduleEvidenceUrl && (
+                        <p className="text-sm mt-3">
+                          <span className="font-medium">Evidencia de finalización:</span>{" "}
+                          {shouldShowInlineDirectorEvidence ? (
+                            <button
+                              type="button"
+                              className="text-primary underline underline-offset-2 break-all"
+                              onClick={() => setExpandedEvidenceModuleId((previous) => (previous === module.id ? null : module.id ?? null))}
+                            >
+                              Ver evidencia
+                            </button>
+                          ) : (
+                            <a
+                              href={moduleEvidenceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary underline underline-offset-2 break-all"
+                            >
+                              Ver evidencia
+                            </a>
+                          )}
+                        </p>
+                      )}
 
-                            setModuleEvidenceFiles((previous) => ({
-                              ...previous,
-                              [targetModuleId]: selectedFile,
-                            }))
-                          }}
-                          disabled={isCompleted || completingModuleId === module.id}
-                        />
-                      </div>
+                      {shouldShowInlineDirectorEvidence && expandedEvidenceModuleId === module.id && (
+                        <div className="mt-3 rounded-md border border-border p-2">
+                          <img src={inlineEvidenceImage} alt="Evidencia de finalización" className="w-full rounded-md" />
+                        </div>
+                      )}
 
-                      <div className="mt-3 flex justify-end">
-                        <Button
-                          type="button"
-                          variant={isCompleted ? "outline" : "default"}
-                          onClick={() => void completeModule(module.id)}
-                          disabled={isCompleted || completingModuleId === module.id}
-                        >
-                          {isCompleted
-                            ? "Completado"
-                            : completingModuleId === module.id
-                              ? "Completando..."
-                              : "Completar"}
-                        </Button>
-                      </div>
+                      {isTeacherView && (
+                        <>
+                          <div className="mt-3 space-y-1">
+                            <label className="text-sm font-medium" htmlFor={`evidence-file-${module.id ?? index}`}>
+                              Evidencia de finalización
+                            </label>
+                            <input
+                              id={`evidence-file-${module.id ?? index}`}
+                              type="file"
+                              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1 file:text-sm"
+                              onChange={(event) => {
+                                const selectedFile = event.target.files?.[0] ?? null
+                                const targetModuleId = module.id
+                                if (!targetModuleId) {
+                                  return
+                                }
+
+                                setModuleEvidenceFiles((previous) => ({
+                                  ...previous,
+                                  [targetModuleId]: selectedFile,
+                                }))
+                              }}
+                              disabled={isCompleted || completingModuleId === module.id}
+                            />
+                          </div>
+
+                          <div className="mt-3 flex justify-end">
+                            <Button
+                              type="button"
+                              variant={isCompleted ? "outline" : "default"}
+                              onClick={() => void completeModule(module.id)}
+                              disabled={isCompleted || completingModuleId === module.id}
+                            >
+                              {isCompleted
+                                ? "Completado"
+                                : completingModuleId === module.id
+                                  ? "Completando..."
+                                  : "Completar"}
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 )
