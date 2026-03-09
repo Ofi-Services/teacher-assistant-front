@@ -8,6 +8,19 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/types"
 
 export default function AssignmentManagementView() {
+  const EXTRA_TEACHER_NAMES = [
+    "Laura Martínez",
+    "Carlos Gómez",
+    "Ana Rodríguez",
+    "Javier Torres",
+    "Mariana López",
+    "Diego Fernández",
+    "Sofía Herrera",
+    "Ricardo Vega",
+    "Valentina Castro",
+    "Pablo Morales",
+  ]
+
   const [response, setResponse] = useState<PaginatedResponse<PlanAssignment> | null>(null)
   const [planOptions, setPlanOptions] = useState<Array<{ id: number; name: string }>>([])
   const [teacherOptions, setTeacherOptions] = useState<Array<{ id: number; name: string }>>([])
@@ -30,7 +43,7 @@ export default function AssignmentManagementView() {
 
   const [newAssignment, setNewAssignment] = useState({
     plan: "",
-    teacher: "",
+    teachers: [] as string[],
     due_date: "",
   })
 
@@ -56,7 +69,15 @@ export default function AssignmentManagementView() {
           id: teacher.teacher_id,
           name: teacher.teacher_name,
         }))
-        setTeacherOptions(teachers)
+
+        const maxTeacherId = teachers.reduce((currentMax, teacher) => Math.max(currentMax, teacher.id), 0)
+
+        const mockTeachers = EXTRA_TEACHER_NAMES.map((name, index) => ({
+          id: maxTeacherId + index + 1,
+          name,
+        }))
+
+        setTeacherOptions([...teachers, ...mockTeachers])
       }
 
       if (dashboardResult.status !== "fulfilled" && assignmentsResult.status === "fulfilled") {
@@ -103,12 +124,21 @@ export default function AssignmentManagementView() {
     event.preventDefault()
     try {
       setError("")
-      await teacherAssistantApi.createAssignment({
-        plan: Number(newAssignment.plan),
-        teacher: Number(newAssignment.teacher),
-        due_date: newAssignment.due_date,
-      })
-      setNewAssignment({ plan: "", teacher: "", due_date: "" })
+      if (newAssignment.teachers.length === 0) {
+        setError("Selecciona al menos un profesor")
+        return
+      }
+
+      await Promise.all(
+        newAssignment.teachers.map((teacherId) =>
+          teacherAssistantApi.createAssignment({
+            plan: Number(newAssignment.plan),
+            teacher: Number(teacherId),
+            due_date: newAssignment.due_date,
+          }),
+        ),
+      )
+      setNewAssignment({ plan: "", teachers: [], due_date: "" })
       await loadAssignments()
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudo crear la asignación")
@@ -155,21 +185,29 @@ export default function AssignmentManagementView() {
               </select>
             </div>
             <div>
-              <Label htmlFor="assignment-teacher">Profesor</Label>
-              <select
-                id="assignment-teacher"
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={newAssignment.teacher}
-                onChange={(event) => setNewAssignment((prev) => ({ ...prev, teacher: event.target.value }))}
-                required
-              >
-                <option value="">Seleccionar profesor</option>
+              <Label>Profesores</Label>
+              <div className="max-h-32 w-full overflow-y-auto rounded-md border border-input bg-background px-3 py-2">
                 {teacherOptions.map((teacher) => (
-                  <option key={teacher.id} value={String(teacher.id)}>
-                    {teacher.name}
-                  </option>
+                  <label key={teacher.id} className="flex items-center gap-2 py-1 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      value={String(teacher.id)}
+                      checked={newAssignment.teachers.includes(String(teacher.id))}
+                      onChange={(event) => {
+                        const teacherId = event.target.value
+                        setNewAssignment((prev) => ({
+                          ...prev,
+                          teachers: event.target.checked
+                            ? [...prev.teachers, teacherId]
+                            : prev.teachers.filter((value) => value !== teacherId),
+                        }))
+                      }}
+                    />
+                    <span>{teacher.name}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
             <div>
               <Label htmlFor="assignment-date">Fecha límite</Label>
