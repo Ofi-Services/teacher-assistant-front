@@ -13,7 +13,7 @@ export default function Sidebar({ navigation, onLogout }: SidebarProps) {
       {/* Logo */}
       <div className="p-6 border-b border-[hsl(235_11%_75%)]">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold">Planes de Desarrollo Personal</h1>
+          <h1 className="text-xl font-bold">Teaching & Learning Center</h1>
         </div>
       </div>
 
