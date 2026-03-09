@@ -7,6 +7,28 @@ import { Label } from "@/shared/components/ui/label"
 import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssistantApi"
 import { PaginatedResponse, PlanAssignment } from "@/modules/teacher-assistant/types"
 
+type AssignmentInsights = {
+  assignmentId: number
+  generatedAt: string
+  alerts: Array<{
+    id: number
+    title: string
+    message: string
+    severity: "low" | "medium" | "high"
+    is_resolved: boolean
+    teacher_name: string
+    plan_name: string
+    created_at: string
+  }>
+  recommendations: Array<{
+    id: number
+    recommendation: string
+    rationale: string
+    context: Record<string, unknown>
+    created_at: string
+  }>
+}
+
 export default function AssignmentManagementView() {
   const EXTRA_TEACHER_NAMES = [
     "Laura Martínez",
@@ -29,7 +51,7 @@ export default function AssignmentManagementView() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [insightsMessage, setInsightsMessage] = useState("")
+  const [insights, setInsights] = useState<AssignmentInsights | null>(null)
 
   const getStatusLabel = (statusValue: PlanAssignment["status"]) => {
     if (statusValue === "assigned") {
@@ -147,15 +169,32 @@ export default function AssignmentManagementView() {
 
   const generateInsights = async (assignmentId: number) => {
     try {
-      setInsightsMessage("")
+      setError("")
+      setInsights(null)
       const result = await teacherAssistantApi.generateInsights(assignmentId)
-      setInsightsMessage(
-        `Asignación ${assignmentId}: ${result.alerts_created.length} alertas y ${result.recommendations_created.length} recomendaciones generadas.`,
-      )
+      setInsights({
+        assignmentId,
+        generatedAt: new Date().toISOString(),
+        alerts: result.alerts_created,
+        recommendations: result.recommendations_created,
+      })
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "No se pudieron generar análisis")
     }
   }
+
+  const severityBreakdown = insights?.alerts.reduce(
+    (accumulator, alert) => {
+      if (alert.severity === "high") {
+        return { ...accumulator, high: accumulator.high + 1 }
+      }
+      if (alert.severity === "medium") {
+        return { ...accumulator, medium: accumulator.medium + 1 }
+      }
+      return { ...accumulator, low: accumulator.low + 1 }
+    },
+    { high: 0, medium: 0, low: 0 },
+  )
 
   return (
     <div className="space-y-6">
@@ -251,7 +290,55 @@ export default function AssignmentManagementView() {
       </Card>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {insightsMessage && <p className="text-sm text-primary">{insightsMessage}</p>}
+
+      {insights && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Análisis profundo · Asignación #{insights.assignmentId}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border border-border p-3">
+              <p className="text-sm font-medium">Resumen ejecutivo</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Se generaron {insights.alerts.length} alertas y {insights.recommendations.length} recomendaciones.
+                {" "}
+                Distribución por severidad: {severityBreakdown?.high ?? 0} alta, {severityBreakdown?.medium ?? 0} media,
+                {" "}
+                {severityBreakdown?.low ?? 0} baja.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Alertas clave</p>
+              {insights.alerts.length === 0 && (
+                <p className="text-sm text-muted-foreground">No se generaron alertas para esta asignación.</p>
+              )}
+              {insights.alerts.slice(0, 5).map((alert) => (
+                <div key={alert.id} className="rounded-md border border-border p-3">
+                  <p className="font-medium">{alert.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{alert.message}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Severidad: {alert.severity} · {alert.teacher_name} · {alert.plan_name}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Recomendaciones priorizadas</p>
+              {insights.recommendations.length === 0 && (
+                <p className="text-sm text-muted-foreground">No se generaron recomendaciones para esta asignación.</p>
+              )}
+              {insights.recommendations.slice(0, 5).map((recommendation) => (
+                <div key={recommendation.id} className="rounded-md border border-border p-3">
+                  <p className="font-medium">{recommendation.recommendation}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{recommendation.rationale}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-3">
         {response?.results.map((assignment) => (
