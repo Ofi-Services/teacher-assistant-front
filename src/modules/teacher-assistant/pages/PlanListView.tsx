@@ -48,9 +48,10 @@ export default function PlanListView() {
         <CardHeader>
           <CardTitle>Buscar planes</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2">
+        <CardContent className="flex flex-col gap-2 sm:flex-row">
           <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar" />
           <Button
+            className="w-full whitespace-nowrap px-3 text-xs sm:w-auto sm:px-4 sm:text-sm"
             onClick={() => {
               if (page !== 1) {
                 setPage(1)
@@ -79,7 +80,12 @@ export default function PlanListView() {
                   Duración: {plan.duration_weeks} semanas · Módulos: {plan.modules.length}
                 </p>
               </div>
-              <Button onClick={() => navigate(`/director/plans/new?edit=${plan.id}`)}>Editar</Button>
+              <Button
+                className="shrink-0 whitespace-nowrap px-3 text-xs sm:px-4 sm:text-sm"
+                onClick={() => navigate(`/director/plans/new?edit=${plan.id}`)}
+              >
+                Editar
+              </Button>
             </CardContent>
           </Card>
         ))}

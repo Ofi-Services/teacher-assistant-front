@@ -288,7 +288,18 @@ export default function DirectorDashboardView() {
             ) : (
               <ChartContainer config={statusChartConfig} className="h-[300px] w-full">
                 <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        hideIndicator
+                        formatter={(value) => (
+                          <span className="font-medium text-zinc-200">
+                            {`Estado de asignaciones: ${typeof value === "number" ? value.toLocaleString() : value}`}
+                          </span>
+                        )}
+                      />
+                    }
+                  />
                   <Pie
                     data={assignmentStatusData}
                     dataKey="count"
