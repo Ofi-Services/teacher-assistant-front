@@ -292,9 +292,10 @@ export default function DirectorDashboardView() {
                     content={
                       <ChartTooltipContent
                         hideIndicator
-                        formatter={(value) => (
+                        hideLabel
+                        formatter={(value, name) => (
                           <span className="font-medium text-zinc-200">
-                            {`Estado de asignaciones: ${typeof value === "number" ? value.toLocaleString() : value}`}
+                            {`${String(name)}: ${typeof value === "number" ? value.toLocaleString() : value}`}
                           </span>
                         )}
                       />
