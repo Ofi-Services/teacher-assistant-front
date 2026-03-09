@@ -18,6 +18,7 @@ export const DIRECTOR_NAV: NavSection[] = [
     title: "Director",
     items: [
       { label: "Dashboard", icon: Home, path: "/director/dashboard", active: true },
+      { label: "Sistema de Carreras y Promoción Docente", icon: BookOpen, path: "/director/career-promotion" },
       { label: "Planes Ruta Docente", icon: BookOpen, path: "/director/plans" },
       { label: "Asignaciones", icon: ClipboardList, path: "/director/assignments" },
       { label: "Alertas", icon: Bell, path: "/director/alerts" },

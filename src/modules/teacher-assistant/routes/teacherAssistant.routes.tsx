@@ -9,6 +9,7 @@ import AssignmentDetailView from "@/modules/teacher-assistant/pages/AssignmentDe
 import AlertsRecommendationsView from "@/modules/teacher-assistant/pages/AlertsRecommendationsView"
 import TeacherPlanListView from "@/modules/teacher-assistant/pages/TeacherPlanListView"
 import CoursesManagementView from "@/shared/components/common/CoursesManagementView"
+import CareerPromotionSystemView from "@/modules/teacher-assistant/pages/CareerPromotionSystemView"
 
 export const teacherAssistantRoutes = (
   <>
@@ -17,6 +18,14 @@ export const teacherAssistantRoutes = (
       element={
         <RoleRoute allowedRoles={["director"]}>
           <DirectorDashboardView />
+        </RoleRoute>
+      }
+    />
+    <Route
+      path="/director/career-promotion"
+      element={
+        <RoleRoute allowedRoles={["director"]}>
+          <CareerPromotionSystemView />
         </RoleRoute>
       }
     />
