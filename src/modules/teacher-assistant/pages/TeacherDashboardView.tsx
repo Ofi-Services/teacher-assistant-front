@@ -61,7 +61,7 @@ export default function TeacherDashboardView() {
           {loading && <p className="text-sm text-muted-foreground">Cargando información...</p>}
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-md border border-border p-3">
-              <p className="text-sm text-muted-foreground">Progreso promedio</p>
+              <p className="text-sm text-muted-foreground">Progreso promedio: </p>
               <p className="text-2xl font-semibold">{teacherKpis.averageProgress}</p>
             </div>
             <div className="rounded-md border border-border p-3">

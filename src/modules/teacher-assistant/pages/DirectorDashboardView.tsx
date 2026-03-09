@@ -200,7 +200,7 @@ export default function DirectorDashboardView() {
       { key: "teachers", label: "Docentes", value: String(totalTeachers) },
       { key: "assignments", label: "Asignaciones", value: String(totalAssignments) },
       { key: "alerts", label: "Alertas activas", value: String(totalActiveAlerts) },
-      { key: "progress", label: "Progreso promedio", value: `${averageProgress}%` },
+      { key: "progress", label: "Progreso promedio: ", value: `${averageProgress}%` },
     ]
   }, [teachersWithExtras])
 

@@ -42,11 +42,11 @@ export function Header({ navigation }: HeaderProps) {
   const displayName = `${user.first_name} ${user.last_name}`.trim() || user.username;
 
   return (
-    <header className="flex items-center justify-between border-b border-border bg-card/60 backdrop-blur px-6 py-4 w-full">
+    <header className="flex items-center justify-between border-b border-[hsl(235_11%_75%)] bg-[hsl(235_11%_90%)] text-[#262426] px-6 py-4 w-full">
       {/* Active Page Title - Left Side */}
       {activePageTitle && (
         <div className="flex items-center gap-2">
-          <h2 className="text-3xl font-semibold text-foreground">
+          <h2 className="text-3xl font-semibold text-[#262426]">
             {activePageTitle}
           </h2>
         </div>
@@ -67,7 +67,7 @@ export function Header({ navigation }: HeaderProps) {
 
         <div className="text-right">
           <div className="text-sm font-semibold">{displayName}</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-[#262426]/80">
             <span>{user.role}</span>
             <span className="mx-1">•</span>
             <span>{user.email}</span>
