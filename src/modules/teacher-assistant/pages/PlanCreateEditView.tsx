@@ -8,12 +8,22 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 
 const PLAN_FORM_PREFILL_STORAGE_KEY = "ofi_plan_form_prefill"
 const CREATE_NEW_MODULE_STORAGE_KEY = "ofi_plan_module_prefill"
+const FILL_PLAN_FORM_EVENT_NAME = "ofi:fill-plan-form"
 
 type ToolFillPlanPayload = {
   titulo?: string
   descripcion?: string
   objetivos?: string
   duracion_semanas?: number | string
+  title?: string
+  description?: string
+  objectives?: string
+  duration_weeks?: number | string
+  duracionSemanas?: number | string
+  payload?: ToolFillPlanPayload
+  data?: ToolFillPlanPayload
+  arguments?: ToolFillPlanPayload
+  args?: ToolFillPlanPayload
 }
 
 interface PlanFormModule {
@@ -96,41 +106,77 @@ export default function PlanCreateEditView() {
       return
     }
 
+    const applyToolPrefill = (rawPayload: unknown) => {
+      if (!rawPayload || typeof rawPayload !== "object") {
+        return
+      }
+
+      const payload = rawPayload as ToolFillPlanPayload
+      const nested = payload.payload ?? payload.data ?? payload.arguments ?? payload.args
+      const resolvedPayload = nested && typeof nested === "object" ? nested : payload
+
+      const nextTitle = resolvedPayload.titulo ?? resolvedPayload.title
+      const nextDescription = resolvedPayload.descripcion ?? resolvedPayload.description
+      const nextObjectives = resolvedPayload.objetivos ?? resolvedPayload.objectives
+
+      if (typeof nextTitle === "string") {
+        setTitle(nextTitle)
+      }
+
+      if (typeof nextDescription === "string") {
+        setDescription(nextDescription)
+      }
+
+      if (typeof nextObjectives === "string") {
+        setObjectives(nextObjectives)
+      }
+
+      const durationCandidate =
+        resolvedPayload.duracion_semanas ?? resolvedPayload.duration_weeks ?? resolvedPayload.duracionSemanas
+      const parsedDuration = Number(durationCandidate)
+
+      if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+        setDurationWeeks(parsedDuration)
+      }
+    }
+
     if (!shouldApplyPrefill) {
       // Keep default create mode blank unless explicitly opened for prefill.
       localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
       localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
-      return
+    } else {
+      let clearStorageTimeout: ReturnType<typeof setTimeout> | null = null
+      const storedPayload = localStorage.getItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+      if (storedPayload) {
+        try {
+          applyToolPrefill(JSON.parse(storedPayload))
+        } catch {
+          // Ignore malformed payloads and keep form editable.
+        }
+
+        // Delay cleanup to avoid losing data during StrictMode double-mount in development.
+        clearStorageTimeout = setTimeout(() => {
+          localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+        }, 1500)
+      }
+
+      if (clearStorageTimeout) {
+        return () => {
+          clearTimeout(clearStorageTimeout)
+          window.removeEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+        }
+      }
     }
 
-    const storedPayload = localStorage.getItem(PLAN_FORM_PREFILL_STORAGE_KEY)
-    if (!storedPayload) {
-      return
+    const handleFillEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolFillPlanPayload>
+      applyToolPrefill(customEvent.detail)
     }
 
-    try {
-      const payload = JSON.parse(storedPayload) as ToolFillPlanPayload
+    window.addEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
 
-      if (typeof payload.titulo === "string") {
-        setTitle(payload.titulo)
-      }
-
-      if (typeof payload.descripcion === "string") {
-        setDescription(payload.descripcion)
-      }
-
-      if (typeof payload.objetivos === "string") {
-        setObjectives(payload.objetivos)
-      }
-
-      const parsedDuration = Number(payload.duracion_semanas)
-      if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
-        setDurationWeeks(parsedDuration)
-      }
-    } catch {
-      // Ignore malformed payloads and keep form editable.
-    } finally {
-      localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+    return () => {
+      window.removeEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
     }
   }, [isEdit, shouldApplyPrefill])
 
