@@ -9,6 +9,13 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 const PLAN_FORM_PREFILL_STORAGE_KEY = "ofi_plan_form_prefill"
 const CREATE_NEW_MODULE_STORAGE_KEY = "ofi_plan_module_prefill"
 
+type ToolFillPlanPayload = {
+  titulo?: string
+  descripcion?: string
+  objetivos?: string
+  duracion_semanas?: number | string
+}
+
 interface PlanFormModule {
   title: string
   description: string
@@ -21,6 +28,7 @@ export default function PlanCreateEditView() {
   const [searchParams] = useSearchParams()
   const editId = useMemo(() => Number(searchParams.get("edit") ?? 0), [searchParams])
   const isEdit = Number.isFinite(editId) && editId > 0
+  const shouldApplyPrefill = searchParams.get("prefill") === "1"
 
   const [saving, setSaving] = useState(false)
   const [loadingPlan, setLoadingPlan] = useState(false)
@@ -88,10 +96,43 @@ export default function PlanCreateEditView() {
       return
     }
 
-    // Ensure create mode always starts blank in /director/plans/new.
-    localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
-    localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
-  }, [isEdit])
+    if (!shouldApplyPrefill) {
+      // Keep default create mode blank unless explicitly opened for prefill.
+      localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+      localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
+      return
+    }
+
+    const storedPayload = localStorage.getItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+    if (!storedPayload) {
+      return
+    }
+
+    try {
+      const payload = JSON.parse(storedPayload) as ToolFillPlanPayload
+
+      if (typeof payload.titulo === "string") {
+        setTitle(payload.titulo)
+      }
+
+      if (typeof payload.descripcion === "string") {
+        setDescription(payload.descripcion)
+      }
+
+      if (typeof payload.objetivos === "string") {
+        setObjectives(payload.objetivos)
+      }
+
+      const parsedDuration = Number(payload.duracion_semanas)
+      if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+        setDurationWeeks(parsedDuration)
+      }
+    } catch {
+      // Ignore malformed payloads and keep form editable.
+    } finally {
+      localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
+    }
+  }, [isEdit, shouldApplyPrefill])
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()

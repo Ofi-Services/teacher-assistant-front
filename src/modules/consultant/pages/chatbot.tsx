@@ -536,7 +536,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
             localStorage.setItem(PLAN_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
             setIsDockVisible(true);
-            navigate('/director/plans/new');
+            navigate('/director/plans/new?prefill=1');
             appendMessage('agent', 'Formulario del plan completado. ¿Quieres que empecemos a agregar módulos?');
 
             window.dispatchEvent(new CustomEvent(FILL_PLAN_FORM_EVENT_NAME, {
@@ -570,7 +570,7 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ agentId }) => {
 
             localStorage.setItem(PLAN_FORM_PREFILL_STORAGE_KEY, JSON.stringify(payload || {}));
             setIsDockVisible(true);
-            navigate('/director/plans/new');
+            navigate('/director/plans/new?prefill=1');
             appendMessage('agent', 'Formulario del plan completado. ¿Quieres que empecemos a agregar módulos?');
 
             window.dispatchEvent(new CustomEvent(FILL_PLAN_FORM_EVENT_NAME, {
