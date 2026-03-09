@@ -148,7 +148,7 @@ export default function DirectorDashboardView() {
 
   const progressChartConfig = {
     progress: {
-      label: "Progreso promedio",
+      label: "Progreso promedio:  ",
       color: "#306898",
     },
   } satisfies ChartConfig
@@ -259,7 +259,18 @@ export default function DirectorDashboardView() {
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="teacher" tickLine={false} axisLine={false} interval={0} height={60} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        hideIndicator
+                        formatter={(value) => (
+                          <span className="font-medium text-zinc-200">
+                            {`Progreso promedio: ${typeof value === "number" ? value.toLocaleString() : value}`}
+                          </span>
+                        )}
+                      />
+                    }
+                  />
                   <Bar dataKey="progress" radius={4} fill="var(--color-progress)" stroke="#262426" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
