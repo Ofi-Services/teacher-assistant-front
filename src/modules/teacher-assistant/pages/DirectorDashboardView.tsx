@@ -265,7 +265,7 @@ export default function DirectorDashboardView() {
                         hideIndicator
                         formatter={(value) => (
                           <span className="font-medium text-zinc-200">
-                            {`Progreso promedio: ${typeof value === "number" ? value.toLocaleString() : value}`}
+                            {`Progreso promedio: ${typeof value === "number" ? value.toLocaleString() : value}%`}
                           </span>
                         )}
                       />
@@ -352,7 +352,18 @@ export default function DirectorDashboardView() {
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="plan" tickLine={false} axisLine={false} interval={0} height={80} angle={-20} textAnchor="end" />
                   <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        hideIndicator
+                        formatter={(value) => (
+                          <span className="font-medium text-zinc-200">
+                            {`Progreso promedio del plan: ${typeof value === "number" ? value.toLocaleString() : value}%`}
+                          </span>
+                        )}
+                      />
+                    }
+                  />
                   <Bar dataKey="avgProgress" radius={4} fill="var(--color-avgProgress)" stroke="#262426" strokeWidth={1} />
                 </BarChart>
               </ChartContainer>
