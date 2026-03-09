@@ -29,7 +29,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
   }
 
   return (
-    <DashboardLayout navigation={navigation} onLogout={logout}>
+    <DashboardLayout navigation={navigation} onLogout={logout} userRole={user.role}>
       {children}
     </DashboardLayout>
   )

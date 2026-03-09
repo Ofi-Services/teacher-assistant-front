@@ -1,19 +1,23 @@
 
 import { NavSection } from "@/shared/config/navigation.config"
+import { UserRole } from "@/modules/teacher-assistant/types"
 import SidebarItem from "./SidebarItem"
 
 interface SidebarProps {
   navigation: NavSection[]
   onLogout: () => void
+  userRole: UserRole
 }
 
-export default function Sidebar({ navigation, onLogout }: SidebarProps) {
+export default function Sidebar({ navigation, onLogout, userRole }: SidebarProps) {
+  const sidebarTitle = userRole === "director" ? "Planes de Desarrollo Profesoral" : "Teaching & Learning Center"
+
   return (
     <aside className="w-64 bg-[hsl(235_11%_90%)] text-[#262426] border-r border-[hsl(235_11%_75%)] flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-[hsl(235_11%_75%)]">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold">Teaching & Learning Center</h1>
+          <h1 className="text-xl font-bold">{sidebarTitle}</h1>
         </div>
       </div>
 
