@@ -9,6 +9,7 @@ import { teacherAssistantApi } from "@/modules/teacher-assistant/api/teacherAssi
 const PLAN_FORM_PREFILL_STORAGE_KEY = "ofi_plan_form_prefill"
 const CREATE_NEW_MODULE_STORAGE_KEY = "ofi_plan_module_prefill"
 const FILL_PLAN_FORM_EVENT_NAME = "ofi:fill-plan-form"
+const CREATE_NEW_MODULE_EVENT_NAME = "ofi:create-new-module"
 
 type ToolFillPlanPayload = {
   titulo?: string
@@ -24,6 +25,21 @@ type ToolFillPlanPayload = {
   data?: ToolFillPlanPayload
   arguments?: ToolFillPlanPayload
   args?: ToolFillPlanPayload
+}
+
+type ToolCreateNewModulePayload = {
+  title?: string
+  description?: string
+  url?: string
+  link?: string
+  order?: number | string
+  expected_days?: number | string
+  titulo?: string
+  descripcion?: string
+  payload?: ToolCreateNewModulePayload
+  data?: ToolCreateNewModulePayload
+  arguments?: ToolCreateNewModulePayload
+  args?: ToolCreateNewModulePayload
 }
 
 interface PlanFormModule {
@@ -106,6 +122,68 @@ export default function PlanCreateEditView() {
       return
     }
 
+    const applyNewModulePrefill = (rawPayload: unknown) => {
+      if (!rawPayload || typeof rawPayload !== "object") {
+        return
+      }
+
+      const payload = rawPayload as ToolCreateNewModulePayload
+      const nested = payload.payload ?? payload.data ?? payload.arguments ?? payload.args
+      const resolvedPayload = nested && typeof nested === "object" ? nested : payload
+
+      const moduleTitle = resolvedPayload.titulo ?? resolvedPayload.title
+      const moduleDescription = resolvedPayload.descripcion ?? resolvedPayload.description
+      const moduleUrl = resolvedPayload.url ?? resolvedPayload.link
+      const parsedExpectedDays = Number(resolvedPayload.expected_days)
+      const expectedDays = Number.isFinite(parsedExpectedDays) && parsedExpectedDays > 0 ? parsedExpectedDays : 7
+
+      if (typeof moduleTitle !== "string" && typeof moduleDescription !== "string" && typeof moduleUrl !== "string") {
+        return
+      }
+
+      setModules((prev) => {
+        const firstModule = prev[0]
+        const hasSingleEmptyModule =
+          prev.length === 1 &&
+          !firstModule.title.trim() &&
+          !firstModule.description.trim() &&
+          !firstModule.url.trim()
+
+        if (hasSingleEmptyModule) {
+          return [
+            {
+              ...firstModule,
+              title: typeof moduleTitle === "string" ? moduleTitle : firstModule.title,
+              description: typeof moduleDescription === "string" ? moduleDescription : firstModule.description,
+              url: typeof moduleUrl === "string" ? moduleUrl : firstModule.url,
+              expected_days: expectedDays,
+            },
+          ]
+        }
+
+        return [
+          ...prev,
+          {
+            title: typeof moduleTitle === "string" ? moduleTitle : "",
+            description: typeof moduleDescription === "string" ? moduleDescription : "",
+            url: typeof moduleUrl === "string" ? moduleUrl : "",
+            order: prev.length + 1,
+            expected_days: expectedDays,
+          },
+        ]
+      })
+    }
+
+    const handleFillEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolFillPlanPayload>
+      applyToolPrefill(customEvent.detail)
+    }
+
+    const handleCreateModuleEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<ToolCreateNewModulePayload>
+      applyNewModulePrefill(customEvent.detail)
+    }
+
     const applyToolPrefill = (rawPayload: unknown) => {
       if (!rawPayload || typeof rawPayload !== "object") {
         return
@@ -143,7 +221,6 @@ export default function PlanCreateEditView() {
     if (!shouldApplyPrefill) {
       // Keep default create mode blank unless explicitly opened for prefill.
       localStorage.removeItem(PLAN_FORM_PREFILL_STORAGE_KEY)
-      localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
     } else {
       let clearStorageTimeout: ReturnType<typeof setTimeout> | null = null
       const storedPayload = localStorage.getItem(PLAN_FORM_PREFILL_STORAGE_KEY)
@@ -168,15 +245,23 @@ export default function PlanCreateEditView() {
       }
     }
 
-    const handleFillEvent = (event: Event) => {
-      const customEvent = event as CustomEvent<ToolFillPlanPayload>
-      applyToolPrefill(customEvent.detail)
+    const storedModulePayload = localStorage.getItem(CREATE_NEW_MODULE_STORAGE_KEY)
+    if (storedModulePayload) {
+      try {
+        applyNewModulePrefill(JSON.parse(storedModulePayload))
+      } catch {
+        // Ignore malformed payloads and keep form editable.
+      } finally {
+        localStorage.removeItem(CREATE_NEW_MODULE_STORAGE_KEY)
+      }
     }
 
     window.addEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+    window.addEventListener(CREATE_NEW_MODULE_EVENT_NAME, handleCreateModuleEvent as EventListener)
 
     return () => {
       window.removeEventListener(FILL_PLAN_FORM_EVENT_NAME, handleFillEvent as EventListener)
+      window.removeEventListener(CREATE_NEW_MODULE_EVENT_NAME, handleCreateModuleEvent as EventListener)
     }
   }, [isEdit, shouldApplyPrefill])
 
